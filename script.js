@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let customVariants = [];
     let matches = [];
     let currentEditIndex = -1;
+    let hasGeneratedPlaylist = false; // Track if user has generated a playlist
 
     // Load data from local storage if available
     loadFromLocalStorage();
@@ -42,6 +43,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             localStorage.setItem('halo2_custom_variants', JSON.stringify(customVariants));
             localStorage.setItem('halo2_matches', JSON.stringify(matches));
+            
+            // Only auto-update playlist if it has been generated once
+            if (hasGeneratedPlaylist && matches.length > 0) {
+                generatePlaylist();
+            }
         } catch (e) {
             console.error('Error saving to local storage:', e);
         }
@@ -69,23 +75,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapOption.appendChild(checkbox);
                 mapOption.appendChild(label);
                 mapSelect.appendChild(mapOption);
-            });
-            
-            mapSelect.addEventListener('click', function(e) {
-                const target = e.target;
-                if (target.tagName === 'INPUT' && target.type === 'checkbox') {
-                    return;
-                }
                 
-                if (target.tagName === 'LABEL' || (target.classList && target.classList.contains('map-option'))) {
-                    const checkbox = target.tagName === 'LABEL' 
-                        ? document.getElementById(target.getAttribute('for'))
-                        : target.querySelector('input[type="checkbox"]');
-                    
-                    if (checkbox) {
+                mapOption.addEventListener('click', function(e) {
+                    e.preventDefault();
                         checkbox.checked = !checkbox.checked;
-                    }
-                }
+                });
+                
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
             });
         }
 
@@ -128,40 +126,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateGameOptions(this.value);
             });
         }
+
+        setupTooltipListeners();
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.info-icon')) {
+                closeAllTooltips();
+            }
+        });
     }
 
     function setupEventListeners() {
-        document.getElementById('add-variant').addEventListener('click', function() {
-            currentEditIndex = -1;
-            openModal('custom-variant-modal');
-        });
-
-
-        document.getElementById('add-match').addEventListener('click', function() {
-            openModal('match-modal');
-        });
-
+        const addVariantBtn = document.getElementById('add-variant');
+        if (addVariantBtn) {
+            addVariantBtn.addEventListener('click', function() {
+                currentEditIndex = -1;
+                openModal('custom-variant-modal');
+            });
+        }
+        
+        const addMatchBtn = document.getElementById('add-match');
+        if (addMatchBtn) {
+            addMatchBtn.addEventListener('click', function() {
+                openModal('match-modal');
+            });
+        }
+        
         document.querySelectorAll('.close').forEach(closeBtn => {
             closeBtn.addEventListener('click', function() {
                 closeModal(this.closest('.modal').id);
             });
         });
-        
-        document.getElementById('gameType').addEventListener('change', function() {
-            updateGameOptions(this.value);
-        });
 
-        document.getElementById('teamPlay').addEventListener('change', function() {
-            toggleTeamOptions(this.value);
-        });
+        const gameTypeSelect = document.getElementById('gameType');
+        if (gameTypeSelect) {
+            gameTypeSelect.addEventListener('change', function() {
+                updateGameOptions(this.value);
+            });
+        }
 
-        document.getElementById('save-variant').addEventListener('click', saveVariant);
+        const teamPlaySelect = document.getElementById('teamPlay');
+        if (teamPlaySelect) {
+            teamPlaySelect.addEventListener('change', function() {
+                toggleTeamOptions(this.value);
+            });
+        }
 
-        document.getElementById('save-match').addEventListener('click', saveMatch);
+        const saveVariantBtn = document.getElementById('save-variant');
+        if (saveVariantBtn) {
+            saveVariantBtn.addEventListener('click', saveVariant);
+        }
+
+        const saveMatchBtn = document.getElementById('save-match');
+        if (saveMatchBtn) {
+            saveMatchBtn.addEventListener('click', saveMatch);
+        }
 
         const generatePlaylistBtn = document.getElementById('generate-playlist');
         if (generatePlaylistBtn) {
-            generatePlaylistBtn.addEventListener('click', generatePlaylist);
+            generatePlaylistBtn.addEventListener('click', function() {
+                generatePlaylist();
+                hasGeneratedPlaylist = true; // Mark that user has generated a playlist
+            });
         }
 
         const downloadPlaylistBtn = document.getElementById('download-playlist');
@@ -180,7 +206,53 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        document.getElementById('clear-all').addEventListener('click', clearAll);
+        const clearAllBtn = document.getElementById('clear-all');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', clearAll);
+        }
+
+        const delaySlider = document.getElementById('delaySlider');
+        if (delaySlider) {
+            delaySlider.addEventListener('input', function() {
+                const delayValue = parseInt(this.value);
+                const delayValueEl = document.getElementById('delayValue');
+                if (delayValueEl) {
+                    delayValueEl.textContent = delayValue + ' seconds';
+                }
+                const delayInputEl = document.getElementById('delayInput');
+                if (delayInputEl) {
+                    delayInputEl.value = delayValue;
+                }
+            });
+        }
+
+        const delayInput = document.getElementById('delayInput');
+        if (delayInput) {
+            delayInput.addEventListener('change', function() {
+                const input = parseInt(this.value);
+                if (isNaN(input) || input < 1 || input > 999) {
+                    showValidationError(this, 'Please enter a valid number between 1 and 999.');
+                    this.value = 15; // Reset to default
+                    const delaySliderEl = document.getElementById('delaySlider');
+                    if (delaySliderEl) {
+                        delaySliderEl.value = 15;
+                    }
+                    const delayValueEl = document.getElementById('delayValue');
+                    if (delayValueEl) {
+                        delayValueEl.textContent = '15 seconds';
+                    }
+                } else {
+                    const delaySliderEl = document.getElementById('delaySlider');
+                    if (delaySliderEl) {
+                        delaySliderEl.value = input;
+                    }
+                    const delayValueEl = document.getElementById('delayValue');
+                    if (delayValueEl) {
+                        delayValueEl.textContent = input + ' seconds';
+                    }
+                }
+            });
+        }
     }
 
     function toggleTeamOptions(teamPlayValue) {
@@ -196,18 +268,70 @@ document.addEventListener('DOMContentLoaded', function() {
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
+
+            modal.classList.add('opening');
+
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+            const modalContent = modal.querySelector('.modal-content');
+            if (scrollbarWidth > 0) {
+                modalContent.style.paddingRight = `${scrollbarWidth}px`;
+            }
+            
             modal.style.display = 'block';
             document.body.classList.add('modal-open');
-        
-        if (modalId === 'custom-variant-modal') {
-                if (currentEditIndex === -1) {
-                    const defaultGameType = document.getElementById('gameType').value;
-            document.getElementById('variantName').value = '';
-                    // Update game options based on selected game type
-                    updateGameOptions(defaultGameType);
+
+            const modalBody = modal.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+
+            setTimeout(() => {
+                modal.classList.remove('opening');
+
+                setupTooltipListeners(modal);
+
+                modal.querySelectorAll('.info-tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('show');
                     
-                    // Set default values for options
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        tooltip.style.visibility = '';
+                        tooltip.style.opacity = '';
+                    }, 50);
+                });
+            }, 300);
+        
+            if (modalId === 'custom-variant-modal') {
+                if (currentEditIndex === -1) {
+                    document.getElementById('gameType').value = 'Slayer';
+                    document.getElementById('variantName').value = '';
+
                     setDefaultFormValues();
+
+                    resetAllOptionSections();
+
+                    updateGameOptions('Slayer');
+                } else {
+                    const variant = customVariants[currentEditIndex];
+                    document.getElementById('variantName').value = variant.name;
+                    updateGameOptions(variant.gameType || 'Slayer');
+                    
+                    if (variant.settings) {
+                        for (const [key, value] of Object.entries(variant.settings)) {
+                            const select = document.getElementById(key);
+                            if (select) {
+                                select.value = value;
+                            }
+                        }
+                    }
+                    
+                    const teamPlaySelect = document.getElementById('teamPlay');
+                    if (teamPlaySelect) {
+                        toggleTeamOptions(teamPlaySelect.value);
+                    }
                 }
             } else if (modalId === 'match-modal') {
                 populateMatchVariantsDropdown();
@@ -216,10 +340,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapCheckboxes.forEach(checkbox => {
                     checkbox.checked = false;
                 });
+
+                const mapSelect = document.getElementById('mapSelect');
+                if (mapSelect) {
+                    mapSelect.scrollTop = 0;
+                }
                 
                 document.getElementById('matchWeight').value = '100';
                 
-                document.getElementById('matchMinPlayers').value = '2';
+                document.getElementById('matchMinPlayers').value = '1';
                 document.getElementById('matchMaxPlayers').value = '16';
             }
         }
@@ -229,8 +358,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-            
+            document.body.classList.remove('modal-open');
+
+            if (modalId === 'custom-variant-modal') {
+                currentEditIndex = -1;
+
+                const variantNameInput = document.getElementById('variantName');
+                if (variantNameInput) {
+                    variantNameInput.value = '';
+                }
+            }
+
             if (modalId === 'match-modal') {
                 resetSaveMatchButton();
             }
@@ -238,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupVariantCreator() {
-        // Check if we have the required data
         if (typeof MATCH_OPTIONS === 'undefined' || 
             typeof PLAYER_SETTINGS === 'undefined' || 
             typeof TEAM_OPTIONS === 'undefined' || 
@@ -248,25 +385,20 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        console.log('Equipment Options:', EQUIPMENT_OPTIONS);
-        if (EQUIPMENT_OPTIONS.length === 0) {
-            console.warn('EQUIPMENT_OPTIONS array is empty');
-        }
-        
+        // Set up match options section
         const matchOptionsContainer = document.getElementById('matchOptions');
-        if (!matchOptionsContainer) {
-            console.error('Element with ID "matchOptions" not found');
-            return;
-        }
-        
-        matchOptionsContainer.innerHTML = '<div class="game-options-grid"></div>';
-        const matchOptionsGrid = matchOptionsContainer.querySelector('.game-options-grid');
-        
-        if (matchOptionsGrid) {
-            MATCH_OPTIONS.forEach(option => {
-                const formGroup = createFormGroup(option);
-                matchOptionsGrid.appendChild(formGroup);
-            });
+        if (matchOptionsContainer) {
+            matchOptionsContainer.innerHTML = '<div class="game-options-grid"></div>';
+            const matchOptionsGrid = matchOptionsContainer.querySelector('.game-options-grid');
+            
+            if (matchOptionsGrid) {
+                MATCH_OPTIONS.forEach(option => {
+                    const formGroup = createFormGroup(option);
+                    if (formGroup) {
+                        matchOptionsGrid.appendChild(formGroup);
+                    }
+                });
+            }
         }
         
         // Set up player settings section
@@ -278,7 +410,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (playerSettingsGrid) {
                 PLAYER_SETTINGS.forEach(option => {
                     const formGroup = createFormGroup(option);
-                    playerSettingsGrid.appendChild(formGroup);
+                    if (formGroup) {
+                        playerSettingsGrid.appendChild(formGroup);
+                    }
                 });
             }
         }
@@ -292,7 +426,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (teamOptionsGrid) {
                 TEAM_OPTIONS.forEach(option => {
                     const formGroup = createFormGroup(option);
-                    teamOptionsGrid.appendChild(formGroup);
+                    if (formGroup) {
+                        teamOptionsGrid.appendChild(formGroup);
+                    }
                 });
             }
         }
@@ -306,32 +442,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (vehicleOptionsGrid) {
                 VEHICLE_OPTIONS.forEach(option => {
                     const formGroup = createFormGroup(option);
-                    vehicleOptionsGrid.appendChild(formGroup);
+                    if (formGroup) {
+                        vehicleOptionsGrid.appendChild(formGroup);
+                    }
                 });
             }
         }
         
-        // Set up equipment options section
+        // Set up equipment options section 
         const equipmentOptionsContainer = document.getElementById('equipmentOptions');
         if (equipmentOptionsContainer) {
-            equipmentOptionsContainer.innerHTML = '';
+            equipmentOptionsContainer.innerHTML = '<div class="game-options-grid"></div>';
+            const equipmentOptionsGrid = equipmentOptionsContainer.querySelector('.game-options-grid');
             
-            if (!equipmentOptionsContainer.classList.contains('game-options-grid')) {
-                equipmentOptionsContainer.classList.add('game-options-grid');
-            }
-            
-            if (EQUIPMENT_OPTIONS && Array.isArray(EQUIPMENT_OPTIONS)) {
+            if (equipmentOptionsGrid) {
                 EQUIPMENT_OPTIONS.forEach(option => {
                     const formGroup = createFormGroup(option);
                     if (formGroup) {
-                        equipmentOptionsContainer.appendChild(formGroup);
+                        equipmentOptionsGrid.appendChild(formGroup);
                     }
                 });
-            } else {
-                console.error('EQUIPMENT_OPTIONS is not properly defined');
             }
-        } else {
-            console.error('Equipment options container not found');
         }
         
         // Initialize game-specific options based on default game type
@@ -452,7 +583,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetTeamPlayOptions() {
         const teamPlaySelect = document.getElementById('teamPlay');
         if (teamPlaySelect) {
-            // Enable the select
             teamPlaySelect.disabled = false;
             
             Array.from(teamPlaySelect.options).forEach(option => {
@@ -508,22 +638,57 @@ document.addEventListener('DOMContentLoaded', function() {
         return BASE_VARIANTS.some(v => v.name.toLowerCase() === variantName.toLowerCase());
     }
 
+    function showValidationError(element, message) {
+        closeAllTooltips();
+        
+        element.classList.add('form-error');
+        
+        element.focus();
+
+        let tooltip = element.nextElementSibling;
+        if (!tooltip || !tooltip.classList.contains('error-tooltip')) {
+            tooltip = document.createElement('div');
+            tooltip.className = 'error-tooltip';
+            element.parentNode.insertBefore(tooltip, element.nextSibling);
+        }
+
+        tooltip.textContent = message;
+        tooltip.classList.add('show');
+        tooltip.style.zIndex = '5000';
+
+        const removeError = () => {
+            element.classList.remove('form-error');
+            tooltip.classList.remove('show');
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            }, 300);
+        };
+        
+        element.addEventListener('input', removeError, { once: true });
+        element.addEventListener('change', removeError, { once: true });
+        
+        setTimeout(removeError, 3000);
+    }
+
     function saveVariant() {
-        const variantName = document.getElementById('variantName').value.trim();
+        const variantNameInput = document.getElementById('variantName');
+        const variantName = variantNameInput.value.trim();
         
         if (!variantName) {
-            alert('Please enter a variant name.');
+            showValidationError(variantNameInput, 'Please enter a variant name');
             return;
         }
         
         if (variantName.length > 16) {
-            alert('Variant name cannot exceed 16 characters.');
+            showValidationError(variantNameInput, 'Variant name cannot exceed 16 characters');
             return;
         }
         
         // Check if name conflicts with base variants as the game overides the custom variant and uses the default base game varaint
         if (checkVariantNameConflict(variantName)) {
-            alert('Cannot use the same name as a base variant. Please choose a different name.');
+            showValidationError(variantNameInput, 'Cannot use the same name as a base variant');
             return;
         }
         
@@ -640,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const variantId = matchVariantSelect.value;
         if (!variantId) {
-            alert('Please select a variant.');
+            showValidationError(matchVariantSelect, 'Please select a variant');
             return;
         }
         
@@ -652,7 +817,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const mapCheckboxes = mapSelect.querySelectorAll('input[type="checkbox"]:checked');
         if (!mapCheckboxes || mapCheckboxes.length === 0) {
-            alert('Please select at least one map.');
+            showValidationError(mapSelect, 'Please select at least one map');
             return;
         }
         
@@ -668,16 +833,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const weight = parseInt(weightInput.value, 10) || 100;
-        const minPlayers = parseInt(minPlayersSelect.value, 10) || 2;
+        const minPlayers = parseInt(minPlayersSelect.value, 10) || 1;
         const maxPlayers = parseInt(maxPlayersSelect.value, 10) || 16;
         
         if (weight < 1 || weight > 1000) {
-            alert('Weight must be between 1 and 1000.');
+            showValidationError(weightInput, 'Weight must be between 1 and 1000.');
             return;
         }
         
         if (minPlayers > maxPlayers) {
-            alert('Minimum players cannot be greater than maximum players.');
+            showValidationError(minPlayersSelect, 'Minimum players cannot be greater than maximum players.');
             return;
         }
         
@@ -758,6 +923,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (matches.length === 0) {
             container.innerHTML = '<p>No matches added yet.</p>';
+            
+            // Hide playlist preview if no matches
+            const previewContainer = document.getElementById('preview-container');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            
             return;
         }
         
@@ -879,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const minPlayersSelect = document.getElementById('matchMinPlayers');
         if (minPlayersSelect) {
-            minPlayersSelect.value = match.minPlayers || 2;
+            minPlayersSelect.value = match.minPlayers || 1;
         }
         
         const maxPlayersSelect = document.getElementById('matchMaxPlayers');
@@ -909,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const variantId = matchVariantSelect.value;
         if (!variantId) {
-            alert('Please select a variant.');
+            showValidationError(matchVariantSelect, 'Please select a variant.');
             return;
         }
         
@@ -921,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const mapCheckboxes = mapSelect.querySelectorAll('input[type="checkbox"]:checked');
         if (!mapCheckboxes || mapCheckboxes.length === 0) {
-            alert('Please select at least one map.');
+            showValidationError(mapSelect, 'Please select at least one map.');
             return;
         }
         
@@ -937,17 +1109,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const weight = parseInt(weightInput.value, 10) || 100;
-        const minPlayers = parseInt(minPlayersSelect.value, 10) || 2;
+        const minPlayers = parseInt(minPlayersSelect.value, 10) || 1;
         const maxPlayers = parseInt(maxPlayersSelect.value, 10) || 16;
         
-        // Validate values
         if (weight < 1 || weight > 1000) {
-            alert('Weight must be between 1 and 1000.');
+            showValidationError(weightInput, 'Weight must be between 1 and 1000.');
             return;
         }
         
         if (minPlayers > maxPlayers) {
-            alert('Minimum players cannot be greater than maximum players.');
+            showValidationError(minPlayersSelect, 'Minimum players cannot be greater than maximum players.');
             return;
         }
         
@@ -1001,7 +1172,18 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const success = document.execCommand('copy');
             if (success) {
-                alert('Playlist copied to clipboard!');
+                // Success notification
+                const notification = document.createElement('div');
+                notification.textContent = 'Playlist copied to clipboard!';
+                notification.className = 'copy-notification';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 2000);
             } else {
                 alert('Failed to copy. Please try again.');
             }
@@ -1014,8 +1196,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePlaylist() {
-        if (matches.length === 0) {
-            alert('Please add at least one match to generate a playlist.');
+        if (matches.length === 0 || customVariants.length === 0) {
+            const generateButton = document.getElementById('generate-playlist');
+            let errorMessage = 'Please create at least one custom variant and add at least one match before generating a playlist.';
+            
+            if (matches.length === 0 && customVariants.length > 0) {
+                errorMessage = 'Please add at least one match before generating a playlist.';
+            } else if (matches.length > 0 && customVariants.length === 0) {
+                errorMessage = 'Please create at least one custom variant before generating a playlist.';
+            }
+
+            let tooltip = document.createElement('div');
+            tooltip.className = 'error-tooltip';
+            tooltip.textContent = errorMessage;
+            tooltip.style.zIndex = '5000';
+
+            generateButton.parentNode.appendChild(tooltip);
+            tooltip.style.top = (generateButton.offsetTop + generateButton.offsetHeight + 5) + 'px';
+            tooltip.style.left = generateButton.offsetLeft + 'px';
+            
+            setTimeout(() => {
+                tooltip.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+                setTimeout(() => {
+                    if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, 300);
+            }, 3000);
+            
             return;
         }
         
@@ -1041,8 +1253,8 @@ document.addEventListener('DOMContentLoaded', function() {
             playlist += '[custom variant]\n';
             playlist += `name=${variant.name}\n`;
             
-                const gameType = GAME_TYPES.find(g => g.id === variant.gameType);
-                playlist += `game type=${gameType ? gameType.name : variant.gameType}\n`;
+            const gameType = GAME_TYPES.find(g => g.id === variant.gameType);
+            playlist += `game type=${gameType ? gameType.name : variant.gameType}\n`;
             
             for (const [key, value] of Object.entries(variant.settings)) {
                 const formattedKey = key.replace(/([A-Z])/g, ' $1').trim();
@@ -1098,17 +1310,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewContainer = document.getElementById('preview-container');
         if (previewContainer) {
             previewContainer.style.display = 'block';
-            
-            previewContainer.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
     // Download the playlist as a .hpl file
     function downloadPlaylist() {
-        const playlistName = document.getElementById('playlistName').value.trim();
+        // Close all tooltips first
+        closeAllTooltips();
+        
+        const playlistNameInput = document.getElementById('playlistName');
+        const playlistName = playlistNameInput.value.trim();
         
         if (!playlistName) {
-            alert('Please enter a playlist name before downloading.');
+            showValidationError(playlistNameInput, 'Please enter a playlist name before downloading');
             return;
         }
         
@@ -1136,29 +1350,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function setDefaultFormValues() {
         document.getElementById('gameType').value = 'Slayer';
         
+        // Reset all match options to their defaults
         MATCH_OPTIONS.forEach(option => {
             const select = document.getElementById(option.id);
             if (select) {
-               
-                    const defaultValue = option.values.find(v => v.default);
-                    if (defaultValue) {
-                        select.value = defaultValue.id;
-                    }
+                const defaultValue = option.values.find(v => v.default);
+                if (defaultValue) {
+                    select.value = defaultValue.id;
                 }
-            
+            }
         });
         
+        // Reset all player settings to their defaults
         PLAYER_SETTINGS.forEach(option => {
             const select = document.getElementById(option.id);
             if (select) {
-                    const defaultValue = option.values.find(v => v.default);
-                    if (defaultValue) {
-                        select.value = defaultValue.id;
-                    }
+                const defaultValue = option.values.find(v => v.default);
+                if (defaultValue) {
+                    select.value = defaultValue.id;
                 }
-            
+            }
         });
- 
+        
+        // Reset team, vehicle, and equipment options to their defaults
         [TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS].forEach(optionCategory => {
             optionCategory.forEach(option => {
                 const select = document.getElementById(option.id);
@@ -1171,8 +1385,55 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
+        // Reset all game-specific options
+        // Slayer options
+        if (typeof SLAYER_OPTIONS !== 'undefined') {
+            SLAYER_OPTIONS.forEach(option => {
+                const select = document.getElementById(option.id);
+                if (select) {
+                    const defaultValue = option.values.find(v => v.default);
+                    if (defaultValue) {
+                        select.value = defaultValue.id;
+                    }
+                }
+            });
+        }
+        
+        // Reset other game type options as well
+        [KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+         ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionsArray => {
+            if (typeof optionsArray !== 'undefined') {
+                optionsArray.forEach(option => {
+                    const select = document.getElementById(option.id);
+                    if (select) {
+                        const defaultValue = option.values.find(v => v.default);
+                        if (defaultValue) {
+                            select.value = defaultValue.id;
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Make sure team play options are properly toggled
         const teamPlaySelect = document.getElementById('teamPlay');
         if (teamPlaySelect) {
+            // Reset to default value
+            const defaultOption = TEAM_OPTIONS.find(option => option.id === 'teamPlay');
+            if (defaultOption) {
+                const defaultValue = defaultOption.values.find(v => v.default);
+                if (defaultValue) {
+                    teamPlaySelect.value = defaultValue.id;
+                }
+            }
+            
+            // Enable the select and make all options visible
+            teamPlaySelect.disabled = false;
+            Array.from(teamPlaySelect.options).forEach(option => {
+                option.style.display = '';
+            });
+            
+            // Toggle visibility of team options based on selected value
             toggleTeamOptions(teamPlaySelect.value);
         }
     }
@@ -1190,6 +1451,16 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGameOptions('Slayer');
     }
 
+    function closeAllTooltips() {
+        document.querySelectorAll('.info-tooltip.show').forEach(tooltip => {
+            tooltip.classList.remove('show');
+        });
+    }
+
+    document.addEventListener('click', () => {
+        closeAllTooltips();
+    });
+
     function createFormGroup(option) {
         if (!option || typeof option !== 'object' || !option.id || !option.name || !Array.isArray(option.values)) {
             console.error('Invalid option provided to createFormGroup:', option);
@@ -1199,9 +1470,63 @@ document.addEventListener('DOMContentLoaded', function() {
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
         
+        const labelContainer = document.createElement('div');
+        labelContainer.className = 'label-container';
+        
         const label = document.createElement('label');
         label.setAttribute('for', option.id);
         label.textContent = option.name;
+        
+        if (option.description) {
+            const infoIcon = document.createElement('span');
+            infoIcon.className = 'info-icon';
+            infoIcon.textContent = 'i';
+            infoIcon.setAttribute('aria-label', `Information about ${option.name}`);
+            infoIcon.setAttribute('tabindex', '0');
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'info-tooltip';
+            tooltip.textContent = option.description;
+
+            infoIcon.addEventListener('mouseenter', () => {
+                closeAllTooltips();
+
+                adjustTooltipPosition(infoIcon, tooltip);
+                
+                tooltip.classList.add('show');
+            });
+            
+            infoIcon.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+            
+            infoIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                if (tooltip.classList.contains('show')) {
+                    tooltip.classList.remove('show');
+                } else {
+                    closeAllTooltips();
+                    adjustTooltipPosition(infoIcon, tooltip);
+                    tooltip.classList.add('show');
+                }
+            });
+            
+            infoIcon.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    closeAllTooltips();
+                    adjustTooltipPosition(infoIcon, tooltip);
+                    tooltip.classList.add('show');
+                }
+            });
+            
+            infoIcon.appendChild(tooltip);
+            labelContainer.appendChild(label);
+            labelContainer.appendChild(infoIcon);
+        } else {
+            labelContainer.appendChild(label);
+        }
         
         const select = document.createElement('select');
         select.id = option.id;
@@ -1233,7 +1558,7 @@ document.addEventListener('DOMContentLoaded', function() {
             select.appendChild(optionEl);
         });
         
-        formGroup.appendChild(label);
+        formGroup.appendChild(labelContainer);
         formGroup.appendChild(select);
         
         return formGroup;
@@ -1255,11 +1580,180 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset form fields
             document.getElementById('playlistName').value = '';
             document.getElementById('shufflePlaylist').value = 'Off';
-            document.getElementById('pregameTeamSelectionDelay').value = '10';
-            document.getElementById('pregameDelay').value = '10';
+            document.getElementById('pregameTeamSelectionDelay').value = '5';
+            document.getElementById('pregameDelay').value = '5';
             document.getElementById('postgameDelay').value = '10';
             
-            alert('All data has been cleared successfully.');
+            // Reset and hide playlist preview
+            const previewContainer = document.getElementById('preview-container');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            
+            const playlistPreview = document.getElementById('playlist-preview');
+            if (playlistPreview) {
+                playlistPreview.textContent = '';
+            }
+            
+            // Reset generated playlist flag to behave like a fresh page load
+            hasGeneratedPlaylist = false;
         }
     }
+
+    function adjustTooltipPosition(infoIcon, tooltip) {
+        tooltip.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-top', 'tooltip-bottom');
+        tooltip.style.zIndex = '2000';
+        tooltip.style.top = '';
+        tooltip.style.left = '';
+        tooltip.style.right = '';
+        tooltip.style.bottom = '';
+        
+        tooltip.style.width = '280px';
+        
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        const iconRect = infoIcon.getBoundingClientRect();
+        const tooltipWidth = tooltip.offsetWidth || 280;
+        
+        const isInModal = infoIcon.closest('.modal-content') !== null;
+        
+        if (isInModal) {
+            const modalRect = infoIcon.closest('.modal-content').getBoundingClientRect();
+            
+            const isRightSide = (iconRect.left > modalRect.left + modalRect.width / 2);
+            
+            const position = isRightSide ? 'left' : 'right';
+            
+            tooltip.style.position = 'absolute';
+            
+            tooltip.classList.add(`tooltip-${position}`);
+            
+            if (isRightSide) {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (tooltipRect.left < modalRect.left) {
+                    const adjustment = modalRect.left - tooltipRect.left + 20;
+                    tooltip.style.left = `${adjustment}px`;
+                }
+            } else {
+                const rightEdge = iconRect.right + tooltipWidth;
+                if (rightEdge > modalRect.right) {
+                    tooltip.classList.remove('tooltip-right');
+                    tooltip.classList.add('tooltip-left');
+                }
+            }
+        } else {
+            const rightEdgePosition = iconRect.right + tooltipWidth + 10;
+            const wouldOverflowRight = rightEdgePosition > viewportWidth;
+            
+            const leftEdgePosition = iconRect.left - tooltipWidth - 10;
+            const wouldOverflowLeft = leftEdgePosition < 0;
+            
+            let position = 'right';
+            
+            if (wouldOverflowRight && !wouldOverflowLeft) {
+                position = 'left';
+            }
+            else if (wouldOverflowRight && wouldOverflowLeft) {
+                const centerPosition = iconRect.left + (iconRect.width / 2) - (tooltipWidth / 2);
+                if (centerPosition >= 0 && centerPosition + tooltipWidth <= viewportWidth) {
+                    position = 'top';
+                } else {
+                    position = (viewportWidth - iconRect.right > iconRect.left) ? 'right' : 'left';
+                }
+            }
+            
+            tooltip.classList.add(`tooltip-${position}`);
+        }
+    }
+
+    function setupTooltipListeners(container = document) {
+        const infoIcons = container.querySelectorAll('.info-icon');
+        infoIcons.forEach(icon => {
+            icon.replaceWith(icon.cloneNode(true));
+
+            const refreshedIcon = container.querySelector(`[aria-label="${icon.getAttribute('aria-label')}"]`);
+            if (!refreshedIcon) return;
+            
+            const tooltip = refreshedIcon.querySelector('.info-tooltip');
+            if (!tooltip) return;
+
+            adjustTooltipPosition(refreshedIcon, tooltip);
+
+            tooltip.classList.remove('show');
+
+            refreshedIcon.style.width = '18px';
+            refreshedIcon.style.height = '18px';
+            refreshedIcon.style.borderRadius = '50%';
+
+            refreshedIcon.addEventListener('mouseenter', (e) => {
+                if (e.target === refreshedIcon) {
+                    closeAllTooltips();
+                    adjustTooltipPosition(refreshedIcon, tooltip);
+                    tooltip.classList.add('show');
+                    
+                    tooltip.style.zIndex = '3000';
+                }
+            });
+            
+            refreshedIcon.addEventListener('mouseleave', (e) => {
+                if (e.target === refreshedIcon) {
+                    tooltip.classList.remove('show');
+                    setTimeout(() => {
+                        if (!tooltip.classList.contains('show')) {
+                            tooltip.style.zIndex = '2000';
+                        }
+                    }, 300);
+                }
+            });
+            
+            refreshedIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (e.target === refreshedIcon) {
+                    if (tooltip.classList.contains('show')) {
+                        tooltip.classList.remove('show');
+                        setTimeout(() => {
+                            if (!tooltip.classList.contains('show')) {
+                                tooltip.style.zIndex = '2000';
+                            }
+                        }, 300);
+                    } else {
+                        closeAllTooltips();
+                        adjustTooltipPosition(refreshedIcon, tooltip);
+                        tooltip.classList.add('show');
+                        tooltip.style.zIndex = '3000';
+                    }
+                }
+            });
+        });
+    }
+
+    // Function to reset any option section to defaults
+    function resetOptionSection(sectionId, optionsArray) {
+        const container = document.getElementById(sectionId);
+        if (!container) return;
+        
+        // Reset container with the standard structure
+        container.innerHTML = '<div class="game-options-grid"></div>';
+        const optionsGrid = container.querySelector('.game-options-grid');
+        
+        if (optionsGrid && Array.isArray(optionsArray)) {
+            optionsArray.forEach(option => {
+                const formGroup = createFormGroup(option);
+                if (formGroup) {
+                    optionsGrid.appendChild(formGroup);
+                }
+            });
+        }
+    }
+
+    // Function to reset all option sections
+    function resetAllOptionSections() {
+        resetOptionSection('matchOptions', MATCH_OPTIONS);
+        resetOptionSection('playerSettings', PLAYER_SETTINGS);
+        resetOptionSection('teamOptions', TEAM_OPTIONS);
+        resetOptionSection('vehicleOptions', VEHICLE_OPTIONS);
+        resetOptionSection('equipmentOptions', EQUIPMENT_OPTIONS);
+    }
+
 }); 

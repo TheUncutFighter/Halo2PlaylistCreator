@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playlist Creator</title>
+    <title>Halo 2 Playlist Creator</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="https://www.halo2pc.com/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <header>
-        <div class="logo">
-            <a href="https://www.halo2pc.com" target="_blank">
-                <img src="halo_2_logo.png" alt="Halo 2 PC Logo">
-            </a>
+        <div class="header-container">
+            <div class="logo">
+                <a href="https://www.halo2pc.com" target="_blank">
+                    <img src="halo_2_logo.png" alt="Halo 2 PC Logo">
+                </a>
+            </div>
+            <div class="title-container">
+                <h1 class="page-title">Halo 2 Playlist Creator</h1>
+                <p class="subtitle">Create and customize server playlists for Project Cartographer</p>
+            </div>
         </div>
-        <h1 class="page-title">Playlist Creator</h1>
     </header>
 
     <main>
@@ -22,44 +27,61 @@
             <div class="playlist-settings section">
                 <h2>Playlist Settings <button id="clear-all" class="btn-danger">Clear All</button></h2>
                 <div class="form-group">
-                    <label for="playlistName">Playlist Name:</label>
+                    <label for="playlistName">Playlist Name</label>
                     <input type="text" id="playlistName" placeholder="My Custom Playlist">
                 </div>
                 <div class="form-group">
-                    <label for="shufflePlaylist">Shuffle Playlist:</label>
+                    <div class="label-container">
+                        <label for="shufflePlaylist">Shuffle Playlist</label>
+                        <span class="info-icon" tabindex="0" aria-label="Information about Shuffle Playlist">i
+                            <div class="info-tooltip">Randomizes the list of matches so that they don't play in order.</div>
+                        </span>
+                    </div>
                     <select id="shufflePlaylist">
                         <option value="Off">Off</option>
                         <option value="On">On</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="pregameTeamSelectionDelay">Pregame Team Selection Delay:</label>
+                    <label for="pregameTeamSelectionDelay">Pregame Team Selection Delay</label>
                     <select id="pregameTeamSelectionDelay">
-                        <option value="10">10 seconds (default)</option>
-                        <option value="1">1 second</option>
-                        <option value="5">5 seconds</option>
-                        <option value="15">15 seconds</option>
-                        <option value="30">30 seconds</option>
+                        <option value="5">5 Seconds</option>
+                        <option value="1">1 Second</option>
+                        <option value="10">10 Seconds</option>
+                        <option value="15">15 Seconds</option>
+                        <option value="20">20 Seconds</option>
+                        <option value="25">25 Seconds</option>
+                        <option value="30">30 Seconds</option>
+                        <option value="45">45 Seconds</option>
+                        <option value="60">60 Seconds</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="pregameDelay">Pregame Delay:</label>
+                    <label for="pregameDelay">Pregame Delay</label>
                     <select id="pregameDelay">
-                        <option value="10">10 seconds (default)</option>
-                        <option value="1">1 second</option>
-                        <option value="5">5 seconds</option>
-                        <option value="15">15 seconds</option>
-                        <option value="30">30 seconds</option>
+                        <option value="5">5 Seconds</option>
+                        <option value="1">1 Second</option>
+                        <option value="10">10 Seconds</option>
+                        <option value="15">15 Seconds</option>
+                        <option value="20">20 Seconds</option>
+                        <option value="25">25 Seconds</option>
+                        <option value="30">30 Seconds</option>
+                        <option value="45">45 Seconds</option>
+                        <option value="60">60 Seconds</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="postgameDelay">Postgame Delay:</label>
+                    <label for="postgameDelay">Postgame Delay</label>
                     <select id="postgameDelay">
-                        <option value="10">10 seconds (default)</option>
-                        <option value="1">1 second</option>
-                        <option value="5">5 seconds</option>
-                        <option value="15">15 seconds</option>
-                        <option value="30">30 seconds</option>
+                        <option value="10">10 Seconds</option>
+                        <option value="1">1 Second</option>
+                        <option value="5">5 Seconds</option>
+                        <option value="15">15 Seconds</option>
+                        <option value="20">20 Seconds</option>
+                        <option value="25">25 Seconds</option>
+                        <option value="30">30 Seconds</option>
+                        <option value="45">45 Seconds</option>
+                        <option value="60">60 Seconds</option>
                     </select>
                 </div>
             </div>
@@ -136,7 +158,7 @@
                 </div>
 
                 <h3 class="section-category">Equipment Settings</h3>
-                <div id="equipmentOptions" class="game-options-grid">
+                <div id="equipmentOptions">
                 </div>
 
                 <div class="form-actions">
@@ -166,7 +188,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="matchWeight" title="Weight determines how often this match appears in the playlist. Higher values mean more frequent selection (Range: 1-1000).">Weight:</label>
+                    <div class="label-container">
+                        <label for="matchWeight">Weight:</label>
+                        <span class="info-icon" tabindex="0" aria-label="Information about Weight">i
+                            <div class="info-tooltip">Weight determines how often this match appears in the playlist. Higher values mean more frequent selection (Range: 1-1000).</div>
+                        </span>
+                    </div>
                     <input type="number" id="matchWeight" min="1" max="1000" value="100">
                 </div>
                 
@@ -212,7 +239,9 @@
                         <option value="16" selected>16</option>
                     </select>
                 </div>
-                <button id="save-match" class="btn primary">Save Match</button>
+                <div class="form-actions">
+                    <button id="save-match" class="btn primary">Save Match</button>
+                </div>
             </div>
         </div>
     </div>
