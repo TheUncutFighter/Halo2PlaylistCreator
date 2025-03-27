@@ -43,8 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             localStorage.setItem('halo2_custom_variants', JSON.stringify(customVariants));
             localStorage.setItem('halo2_matches', JSON.stringify(matches));
-            
-            // Only auto-update playlist if it has been generated once
+
             if (hasGeneratedPlaylist && matches.length > 0) {
                 generatePlaylist();
             }
@@ -67,18 +66,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkbox.id = 'map_' + map.id;
                 checkbox.value = map.id;
                 checkbox.setAttribute('data-map-id', map.id);
+
+                const mapImage = document.createElement('img');
+                mapImage.className = 'map-image';
+                
+                let imageFileName = map.id.toLowerCase();
+
+                imageFileName = imageFileName.replace(/\s+/g, '');
+
+                mapImage.src = `icons/${imageFileName}.png`;
+                mapImage.alt = map.name;
+
+                mapImage.onerror = function() {
+                    this.src = 'icons/default.png';
+                    console.log(`Failed to load map image for ${map.name}, using default image`);
+                };
                 
                 const label = document.createElement('label');
                 label.setAttribute('for', 'map_' + map.id);
                 label.textContent = map.name;
                 
                 mapOption.appendChild(checkbox);
+                mapOption.appendChild(mapImage);
                 mapOption.appendChild(label);
                 mapSelect.appendChild(mapOption);
                 
                 mapOption.addEventListener('click', function(e) {
-                    e.preventDefault();
+                    if (e.target !== checkbox) {
+                        e.preventDefault();
                         checkbox.checked = !checkbox.checked;
+                    }
                 });
                 
                 checkbox.addEventListener('click', function(e) {
@@ -142,6 +159,24 @@ document.addEventListener('DOMContentLoaded', function() {
             addVariantBtn.addEventListener('click', function() {
                 currentEditIndex = -1;
                 openModal('custom-variant-modal');
+            });
+        }
+        
+        // Add event listener for import button
+        const importHplBtn = document.getElementById('import-hpl');
+        if (importHplBtn) {
+            importHplBtn.addEventListener('click', function() {
+                document.getElementById('hpl-file-input').click();
+            });
+        }
+        
+        // Add event listener for file input change
+        const hplFileInput = document.getElementById('hpl-file-input');
+        if (hplFileInput) {
+            hplFileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    importHplFile(e.target.files[0]);
+                }
             });
         }
         
@@ -877,6 +912,39 @@ document.addEventListener('DOMContentLoaded', function() {
         customVariants.forEach((variant, index) => {
             const variantItem = document.createElement('div');
             variantItem.className = 'variant-item';
+
+            const variantIcon = document.createElement('img');
+            variantIcon.className = 'variant-icon';
+
+            let iconPath = 'icons/gamemode_slayer.png';
+            
+            // Find the correct icon based on game type
+            if (variant.gameType) {
+                const gameTypeLower = variant.gameType.toLowerCase();
+                
+                // Map game types to their respective icon filenames
+                if (gameTypeLower === 'kingofthehill') {
+                    iconPath = 'icons/gamemode_koth.png';
+                } else if (gameTypeLower === 'oddball') {
+                    iconPath = 'icons/gamemode_oddball.png';
+                } else if (gameTypeLower === 'juggernaut') {
+                    iconPath = 'icons/gamemode_juggernaut.png';
+                } else if (gameTypeLower === 'capturetheflag') {
+                    iconPath = 'icons/gamemode_ctf.png';
+                } else if (gameTypeLower === 'assault') {
+                    iconPath = 'icons/gamemode_assault.png';
+                } else if (gameTypeLower === 'territories') {
+                    iconPath = 'icons/gamemode_territories.png';
+                } else {
+                    iconPath = 'icons/gamemode_slayer.png';
+                }
+            }
+            
+            variantIcon.src = iconPath;
+            variantIcon.alt = variant.gameType || 'Slayer';
+            variantIcon.onerror = function() {
+                this.src = 'icons/gamemode_slayer.png';
+            };
             
             const details = document.createElement('div');
             details.className = 'variant-item-details';
@@ -910,6 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             actions.appendChild(editBtn);
             actions.appendChild(deleteBtn);
             
+            variantItem.appendChild(variantIcon);
             variantItem.appendChild(details);
             variantItem.appendChild(actions);
             
@@ -937,28 +1006,61 @@ document.addEventListener('DOMContentLoaded', function() {
             const matchItem = document.createElement('div');
             matchItem.className = 'match-item';
             
-            const details = document.createElement('div');
-            details.className = 'match-item-details';
-            
             let variantName = match.variant;
             let mapName = match.map;
+            let gameType = '';
             
             // Check if it's a built-in variant
             const builtInVariant = BASE_VARIANTS.find(v => v.id === match.variant);
             if (builtInVariant) {
                 variantName = builtInVariant.name;
+                gameType = builtInVariant.gameType;
             }
             
             // Check if it's a custom variant
             const customVariant = customVariants.find(v => v.name === match.variant);
             if (customVariant) {
                 variantName = customVariant.name;
+                gameType = customVariant.gameType;
             }
             
             const mapObj = MAPS.find(m => m.id === match.map);
             if (mapObj) {
                 mapName = mapObj.name;
             }
+
+            const variantIcon = document.createElement('img');
+            variantIcon.className = 'variant-icon';
+
+            let iconPath = 'icons/gamemode_slayer.png';
+
+            if (gameType) {
+                const gameTypeLower = gameType.toLowerCase();
+                
+                // Map game types to their respective icon filenames
+                if (gameTypeLower === 'kingofthehill') {
+                    iconPath = 'icons/gamemode_koth.png';
+                } else if (gameTypeLower === 'oddball') {
+                    iconPath = 'icons/gamemode_oddball.png';
+                } else if (gameTypeLower === 'juggernaut') {
+                    iconPath = 'icons/gamemode_juggernaut.png';
+                } else if (gameTypeLower === 'capturetheflag') {
+                    iconPath = 'icons/gamemode_ctf.png';
+                } else if (gameTypeLower === 'assault') {
+                    iconPath = 'icons/gamemode_assault.png';
+                } else if (gameTypeLower === 'territories') {
+                    iconPath = 'icons/gamemode_territories.png';
+                }
+            }
+            
+            variantIcon.src = iconPath;
+            variantIcon.alt = gameType || 'Slayer';
+            variantIcon.onerror = function() {
+                this.src = 'icons/gamemode_slayer.png';
+            };
+            
+            const details = document.createElement('div');
+            details.className = 'match-item-details';
             
             details.innerHTML = `
                 <strong>${variantName} on ${mapName}</strong><br>
@@ -983,6 +1085,7 @@ document.addEventListener('DOMContentLoaded', function() {
             actions.appendChild(editBtn);
             actions.appendChild(deleteBtn);
             
+            matchItem.appendChild(variantIcon);
             matchItem.appendChild(details);
             matchItem.appendChild(actions);
             
@@ -997,20 +1100,26 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('variantName').value = variant.name;
         document.getElementById('gameType').value = variant.gameType || 'Slayer';
         
+        // First update the game options UI based on the selected game type
         updateGameOptions(variant.gameType || 'Slayer');
         
-        if (variant.settings) {
-            for (const [key, value] of Object.entries(variant.settings)) {
-                const select = document.getElementById(key);
-                if (select) {
-                    select.value = value;
-                }
-            }
-        }
+        // Reset all form values to defaults first
+        resetAllOptionSections();
         
-        const teamPlaySelect = document.getElementById('teamPlay');
-        if (teamPlaySelect) {
-            toggleTeamOptions(teamPlaySelect.value);
+        if (variant.settings) {
+            setTimeout(() => {
+                for (const [key, value] of Object.entries(variant.settings)) {
+                    const select = document.getElementById(key);
+                    if (select) {
+                        select.value = value;
+                        
+                        // If this is the teamPlay setting, make sure to toggle team options
+                        if (key === 'teamPlay') {
+                            toggleTeamOptions(value);
+                        }
+                    }
+                }
+            }, 50);
         }
         
         openModal('custom-variant-modal');
@@ -1257,7 +1366,24 @@ document.addEventListener('DOMContentLoaded', function() {
             playlist += `game type=${gameType ? gameType.name : variant.gameType}\n`;
             
             for (const [key, value] of Object.entries(variant.settings)) {
-                const formattedKey = key.replace(/([A-Z])/g, ' $1').trim();
+                let displayName = null;
+
+                if (key === 'scoreToWinRound' || key === 'scoreToWin') {
+                    displayName = 'Score to Win Round';
+                } else {
+                    [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
+                     SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+                     ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
+                        if (!optionCategory) return;
+                        
+                        const option = optionCategory.find(opt => opt.id === key);
+                        if (option && option.name) {
+                            displayName = option.name;
+                        }
+                    });
+                }
+
+                const formattedKey = displayName || formatSettingKey(key);
                 
                 let formattedValue = value;
                 
@@ -1271,6 +1397,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                 });
+                
+                // Special case handling for weapon respawn time
+                if (key === 'weaponRespawnTime' && value === 'HalfTime') {
+                    formattedValue = 'Half Time';
+                } else if (key === 'weaponRespawnTime' && value === 'DoubleTime') {
+                    formattedValue = 'Twice as Often';
+                }
+
+                const timeValueMatch = formattedValue.match(/^(\d+)(Minute|Second|Minutes|Seconds)$/);
+                if (timeValueMatch) {
+                    const number = timeValueMatch[1];
+                    const unit = timeValueMatch[2].toLowerCase();
+
+                    if (unit === 'minute' || unit === 'minutes') {
+                        formattedValue = `${number} ${number === '1' ? 'Minute' : 'Minutes'}`;
+                    } else if (unit === 'second' || unit === 'seconds') {
+                        formattedValue = `${number} ${number === '1' ? 'Second' : 'Seconds'}`;
+                    }
+                }
+                
+                if (typeof formattedValue === 'string') {
+                    const timeTerms = ['minute', 'minutes', 'second', 'seconds', 'half time', 'twice as often'];
+                    timeTerms.forEach(term => {
+                        if (formattedValue.toLowerCase().includes(term)) {
+                            formattedValue = formattedValue.split(' ').map(word => {
+                                return word.charAt(0).toUpperCase() + word.slice(1);
+                            }).join(' ');
+                        }
+                    });
+                }
                 
                 playlist += `${formattedKey} = ${formattedValue}\n`;
             }
@@ -1291,13 +1447,19 @@ document.addEventListener('DOMContentLoaded', function() {
             let mapName = match.map;
             const mapObj = MAPS.find(m => m.id === match.map);
             if (mapObj) {
-                // Use file_name if available, otherwise use display name for the HPL file
                 mapName = mapObj.file_name || mapObj.name;
             }
             
             playlist += `variant=${variantName}\n`;
             playlist += `map=${mapName}\n`;
-            playlist += `weight=${match.weight}\n`;
+            
+            // Comment out undefined weights
+            if (match.weight === undefined) {
+                playlist += `;weight=undefined\n`;
+            } else {
+                playlist += `weight=${match.weight}\n`;
+            }
+            
             playlist += `minimum players=${match.minPlayers}\n`;
             playlist += `maximum players=${match.maxPlayers}\n\n`;
         });
@@ -1315,7 +1477,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Download the playlist as a .hpl file
     function downloadPlaylist() {
-        // Close all tooltips first
         closeAllTooltips();
         
         const playlistNameInput = document.getElementById('playlistName');
@@ -1414,11 +1575,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-        
-        // Make sure team play options are properly toggled
+
         const teamPlaySelect = document.getElementById('teamPlay');
         if (teamPlaySelect) {
-            // Reset to default value
             const defaultOption = TEAM_OPTIONS.find(option => option.id === 'teamPlay');
             if (defaultOption) {
                 const defaultValue = defaultOption.values.find(v => v.default);
@@ -1426,14 +1585,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     teamPlaySelect.value = defaultValue.id;
                 }
             }
-            
-            // Enable the select and make all options visible
+
             teamPlaySelect.disabled = false;
             Array.from(teamPlaySelect.options).forEach(option => {
                 option.style.display = '';
             });
-            
-            // Toggle visibility of team options based on selected value
+
             toggleTeamOptions(teamPlaySelect.value);
         }
     }
@@ -1728,12 +1885,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Function to reset any option section to defaults
     function resetOptionSection(sectionId, optionsArray) {
         const container = document.getElementById(sectionId);
         if (!container) return;
-        
-        // Reset container with the standard structure
+
         container.innerHTML = '<div class="game-options-grid"></div>';
         const optionsGrid = container.querySelector('.game-options-grid');
         
@@ -1747,13 +1902,540 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to reset all option sections
     function resetAllOptionSections() {
         resetOptionSection('matchOptions', MATCH_OPTIONS);
         resetOptionSection('playerSettings', PLAYER_SETTINGS);
         resetOptionSection('teamOptions', TEAM_OPTIONS);
         resetOptionSection('vehicleOptions', VEHICLE_OPTIONS);
         resetOptionSection('equipmentOptions', EQUIPMENT_OPTIONS);
+    }
+
+    function importHplFile(file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            parseHplContent(fileContent);
+        };
+        
+        reader.onerror = function() {
+            alert('Error reading the file. Please try again.');
+        };
+        
+        reader.readAsText(file);
+    }
+    function parseHplContent(content) {
+        try {
+            console.log('Starting to parse .hpl file content');
+
+            const lines = content.split(/\r?\n/);
+            
+            let currentSection = null;
+            let currentVariant = null;
+            let currentMatch = null;
+            let importedVariants = [];
+            let importedMatches = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line === '' || line.startsWith(';')) {
+                    continue;
+                }
+
+                if (line.startsWith('[') && line.endsWith(']')) {
+                    console.log(`Found section: ${line}`);
+
+                    if (currentSection === '[custom variant]' && currentVariant && currentVariant.name) {
+                        console.log(`Completed variant: ${currentVariant.name}, Game Type: ${currentVariant.gameType}`);
+                        importedVariants.push(currentVariant);
+                    }
+
+                    if (currentSection === '[match]' && currentMatch && currentMatch.variant && currentMatch.map) {
+                        console.log(`Completed match: ${currentMatch.variant} on ${currentMatch.map}`);
+                        importedMatches.push(currentMatch);
+                    }
+
+                    currentSection = line.toLowerCase();
+
+                    if (currentSection === '[custom variant]') {
+                        currentVariant = { settings: {} };
+                    } else if (currentSection === '[match]') {
+                        currentMatch = {};
+                    }
+                    
+                    continue;
+                }
+                
+                if (line.includes('=')) {
+                    const parts = line.split(/\s*=\s*/);
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        const value = parts.slice(1).join('=').trim();
+                        
+                        console.log(`  Setting: ${key} = ${value} (in section ${currentSection})`);
+                        
+                        if (currentSection === '[playlist]') {
+                            if (i > 0 && lines[i-1].trim().startsWith(';')) {
+                                const commentLine = lines[i-1].trim();
+                                const playlistName = commentLine.substring(1).trim();
+                                if (playlistName && !document.getElementById('playlistName').value) {
+                                    document.getElementById('playlistName').value = playlistName;
+                                }
+                            }
+                            continue;
+                        } else if (currentSection === '[custom variant]' && currentVariant) {
+                            handleVariantSetting(currentVariant, key, value);
+                        } else if (currentSection === '[match]' && currentMatch) {
+                            handleMatchSetting(currentMatch, key, value);
+                        }
+                    }
+                }
+            }
+
+            if (currentSection === '[custom variant]' && currentVariant && currentVariant.name) {
+                console.log(`Final variant: ${currentVariant.name}, Game Type: ${currentVariant.gameType}`);
+                importedVariants.push(currentVariant);
+            } else if (currentSection === '[match]' && currentMatch && currentMatch.variant && currentMatch.map) {
+                console.log(`Final match: ${currentMatch.variant} on ${currentMatch.map}`);
+                importedMatches.push(currentMatch);
+            }
+            
+            console.log(`Imported ${importedVariants.length} variants and ${importedMatches.length} matches`);
+
+            mergeVariants(importedVariants);
+
+            mergeMatches(importedMatches);
+            
+            updateCustomVariantsList();
+            updateMatchesList();
+
+            saveToLocalStorage();
+
+            alert(`Successfully imported:
+- ${importedVariants.length} custom variants
+- ${importedMatches.length} matches`);
+
+            if (matches.length > 0) {
+                generatePlaylist();
+                hasGeneratedPlaylist = true;
+            }
+            
+            // Reset the file input
+            document.getElementById('hpl-file-input').value = '';
+            
+        } catch (error) {
+            console.error('Error parsing .hpl file:', error);
+            alert('Error parsing the file. Please check if it\'s a valid .hpl file.');
+            document.getElementById('hpl-file-input').value = '';
+        }
+    }
+    
+    // Handle playlist settings
+    function handlePlaylistSetting(key, value) {
+        key = key.toLowerCase();
+        
+        if (key === 'shuffle') {
+            document.getElementById('shufflePlaylist').value = value;
+        } else if (key === 'pregame team selection delay') {
+            document.getElementById('pregameTeamSelectionDelay').value = value;
+        } else if (key === 'pregame delay') {
+            document.getElementById('pregameDelay').value = value;
+        } else if (key === 'postgame delay') {
+            document.getElementById('postgameDelay').value = value;
+        }
+    }
+    
+    // Handle variant settings
+    function handleVariantSetting(variant, key, value) {
+        key = key.toLowerCase();
+        
+        if (key === 'name') {
+            variant.name = value;
+        } else if (key === 'game type') {
+            // Convert display name back to ID
+            const gameType = GAME_TYPES.find(g => g.name.toLowerCase() === value.toLowerCase());
+            variant.gameType = gameType ? gameType.id : value;
+        } else if (key === 'team play') {
+            variant.settings.teamPlay = value.toLowerCase() === 'on' ? 'On' : 'Off';
+        } else if (key === 'moving hill' || key === 'uncontested hill') {
+            const settingKey = keyToSettingId(key);
+            variant.settings[settingKey] = formatSettingValue(settingKey, value);
+        } else if (key === 'score to win' || key === 'score to win round' || key === 'time limit') {
+
+            const settingKey = (key === 'score to win') ? 'scoreToWinRound' : keyToSettingId(key);
+            variant.settings[settingKey] = formatSettingValue(settingKey, value);
+        } else {
+            const settingKey = keyToSettingId(key);
+
+            let formattedValue = formatSettingValue(settingKey, value);
+            
+            // Handle options from each category
+            [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
+             SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+             ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
+                if (!optionCategory) return;
+                
+                optionCategory.forEach(option => {
+                    if (option.id === settingKey) {
+                        const foundValue = option.values.find(v => v.id === formattedValue);
+                        if (foundValue) {
+                            formattedValue = foundValue.id;
+                        } else {
+                            for (const v of option.values) {
+                                const vNormalized = v.name.toLowerCase().replace(/\s+/g, '');
+                                const valueNormalized = value.toLowerCase().replace(/\s+/g, '');
+                                if (vNormalized === valueNormalized || v.id.toLowerCase() === valueNormalized) {
+                                    formattedValue = v.id;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            
+            variant.settings[settingKey] = formattedValue;
+        }
+    }
+
+    function handleMatchSetting(match, key, value) {
+        key = key.toLowerCase();
+        
+        if (key === 'variant') {
+            match.variant = value;
+            
+            const builtInVariantById = BASE_VARIANTS.find(v => v.id === value);
+            if (builtInVariantById) {
+                match.variant = builtInVariantById.name;
+            }
+        } else if (key === 'map') {
+            const map = MAPS.find(m => 
+                m.name.toLowerCase() === value.toLowerCase() || 
+                (m.file_name && m.file_name.toLowerCase() === value.toLowerCase())
+            );
+            
+            if (map) {
+                match.map = map.id;
+            } else {
+                console.warn(`Could not find map: ${value}. Using as is.`);
+                match.map = value;
+            }
+        } else if (key === 'weight') {
+            match.weight = parseInt(value, 10) || 100;
+        } else if (key === 'minimum players') {
+            match.minPlayers = parseInt(value, 10) || 1;
+        } else if (key === 'maximum players') {
+            match.maxPlayers = parseInt(value, 10) || 16;
+        }
+    }
+
+    function formatSettingKey(key) {
+        let displayName = null;
+        
+        if (key === 'scoreToWin' || key === 'scoreToWinRound') {
+            return 'Score to Win Round';
+        }
+
+        [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
+         SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+         ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
+            if (!optionCategory) return;
+            
+            const option = optionCategory.find(opt => opt.id === key);
+            if (option && option.name) {
+                displayName = option.name;
+            }
+        });
+
+        if (displayName) {
+            return displayName;
+        }
+
+        const keyMappings = {
+            'scoreToWin': 'Score to Win Round',
+            'scoreToWinRound': 'Score to Win Round',
+            'timeLimit': 'Time Limit',
+            'numberOfRounds': 'Number of Rounds',
+            'roundsToWin': 'Rounds to Win',
+            'livesPerRound': 'Lives per Round',
+            'respawnTime': 'Respawn Time',
+            'respawnOnDeath': 'Respawn on Death',
+            'respawnGrowth': 'Respawn Growth',
+            'suicidePenalty': 'Suicide Penalty',
+            'betrayalPenalty': 'Betrayal Penalty',
+            'friendlyFire': 'Friendly Fire',
+            'indestructibleVehicles': 'Indestructible Vehicles',
+            'shields': 'Shields',
+            'startingEquipment': 'Starting Equipment',
+            'invisibility': 'Invisibility',
+            'startingGrenades': 'Starting Grenades',
+            'infiniteGrenades': 'Infinite Grenades',
+            'movingHill': 'Moving Hill',
+            'uncontestedHill': 'Uncontested Hill',
+            'teamTimeMultiplier': 'Team Time Multiplier',
+            'activeCamoOnHill': 'Active Camo on Hill',
+            'extraDamageOnHill': 'Extra Damage on Hill',
+            'damageResistanceOnHill': 'Damage Resistance on Hill',
+            'weaponRespawnTime': 'Weapon Respawn Time',
+            'weaponSet': 'Weapon Set',
+            'teamPlay': 'Team Play',
+            'teamScoring': 'Team Scoring'
+        };
+
+        if (keyMappings[key]) {
+            return keyMappings[key];
+        }
+
+        return key.replace(/([A-Z])/g, ' $1')
+                 .replace(/^./, function(str) { return str.toUpperCase(); })
+                 .trim();
+    }
+
+    function formatSettingValue(key, value) {
+        const valueMappings = {
+            'on': 'On',
+            'off': 'Off',
+            'yes': 'On',
+            'no': 'Off',
+            'true': 'On',
+            'false': 'Off',
+            'unlimited': 'Unlimited',
+            'none': 'None',
+            '1 second': '1Second',
+            '3 seconds': '3Seconds',
+            '5 seconds': '5Seconds',
+            '10 seconds': '10Seconds',
+            '15 seconds': '15Seconds',
+            '20 seconds': '20Seconds',
+            '30 seconds': '30Seconds',
+            '45 seconds': '45Seconds',
+            '60 seconds': '60Seconds',
+            '1 minute': '1Minute',
+            '2 minutes': '2Minutes',
+            '3 minutes': '3Minutes',
+            '5 minutes': '5Minutes',
+            '10 minutes': '10Minutes',
+            '15 minutes': '15Minutes',
+            '20 minutes': '20Minutes',
+            '30 minutes': '30Minutes',
+            '45 minutes': '45Minutes',
+            '60 minutes': '60Minutes',
+            '1 hour': '1Hour',
+            '1 min': '1Minute',
+            '2 min': '2Minutes',
+            '3 min': '3Minutes',
+            '5 min': '5Minutes',
+            '10 min': '10Minutes',
+            '15 min': '15Minutes',
+            '20 min': '20Minutes',
+            '30 min': '30Minutes',
+            '45 min': '45Minutes',
+            '60 min': '60Minutes',
+            '1 Second': '1Second',
+            '3 Seconds': '3Seconds',
+            '5 Seconds': '5Seconds',
+            '10 Seconds': '10Seconds',
+            '15 Seconds': '15Seconds',
+            '20 Seconds': '20Seconds',
+            '30 Seconds': '30Seconds',
+            '45 Seconds': '45Seconds',
+            '60 Seconds': '60Seconds',
+            '1 Minute': '1Minute',
+            '2 Minutes': '2Minutes',
+            '3 Minutes': '3Minutes',
+            '5 Minutes': '5Minutes',
+            '10 Minutes': '10Minutes',
+            '15 Minutes': '15Minutes',
+            '20 Minutes': '20Minutes',
+            '30 Minutes': '30Minutes',
+            '45 Minutes': '45Minutes',
+            '60 Minutes': '60Minutes',
+            '1 Hour': '1Hour',
+            'half as often': 'HalfTime',
+            'twice as often': 'DoubleTime',
+            'half time': 'HalfTime',
+            'double time': 'DoubleTime',
+            'Half Time': 'HalfTime',
+            'Twice as Often': 'DoubleTime',
+            'Half as Often': 'HalfTime'
+        };
+
+        if (key === 'scoreToWin' || key === 'timeLimit' || key === 'scoreToWinRound' || 
+            key === 'movingHill' || key === 'uncontestedHill') {
+            const minuteMatch = value.match(/(\d+)\s*(?:minute|min|minutes|mins)s?/i);
+            if (minuteMatch) {
+                const minutes = parseInt(minuteMatch[1], 10);
+                return `${minutes}Minute${minutes !== 1 ? 's' : ''}`;
+            }
+            
+            const secondMatch = value.match(/(\d+)\s*(?:second|sec|seconds|secs)s?/i);
+            if (secondMatch) {
+                const seconds = parseInt(secondMatch[1], 10);
+                return `${seconds}Second${seconds !== 1 ? 's' : ''}`;
+            }
+        }
+
+        const lowercaseValue = value.toLowerCase();
+        if (valueMappings[lowercaseValue]) {
+            return valueMappings[lowercaseValue];
+        }
+
+        const allOptions = [
+            ...MATCH_OPTIONS, 
+            ...PLAYER_SETTINGS, 
+            ...TEAM_OPTIONS, 
+            ...VEHICLE_OPTIONS, 
+            ...EQUIPMENT_OPTIONS
+        ];
+        
+        // Add game-specific options based on game type
+        if (typeof SLAYER_OPTIONS !== 'undefined') allOptions.push(...SLAYER_OPTIONS);
+        if (typeof KOTH_OPTIONS !== 'undefined') allOptions.push(...KOTH_OPTIONS);
+        if (typeof ODDBALL_OPTIONS !== 'undefined') allOptions.push(...ODDBALL_OPTIONS);
+        if (typeof JUGGERNAUT_OPTIONS !== 'undefined') allOptions.push(...JUGGERNAUT_OPTIONS);
+        if (typeof CTF_OPTIONS !== 'undefined') allOptions.push(...CTF_OPTIONS);
+        if (typeof ASSAULT_OPTIONS !== 'undefined') allOptions.push(...ASSAULT_OPTIONS);
+        if (typeof TERRITORIES_OPTIONS !== 'undefined') allOptions.push(...TERRITORIES_OPTIONS);
+        
+        const option = allOptions.find(opt => opt.id === key);
+        if (option && option.values) {
+            let optionValue = option.values.find(v => 
+                v.name.toLowerCase() === lowercaseValue || 
+                v.id.toLowerCase() === lowercaseValue
+            );
+            
+            if (!optionValue) {
+
+                const numericValue = parseInt(value, 10);
+                if (!isNaN(numericValue)) {
+                    optionValue = option.values.find(v => {
+                        const match = v.name.match(/^(\d+)/);
+                        return match && parseInt(match[1], 10) === numericValue;
+                    });
+                }
+            }
+            
+            if (!optionValue) {
+                const normalizedValue = lowercaseValue.replace(/\s+/g, '');
+                
+                optionValue = option.values.find(v => {
+                    const normalizedName = v.name.toLowerCase().replace(/\s+/g, '');
+                    const normalizedId = v.id.toLowerCase();
+                    return normalizedName === normalizedValue || normalizedId === normalizedValue;
+                });
+            }
+            
+            if (!optionValue) {
+                if (key === 'weaponRespawnTime') {
+                    if (lowercaseValue.includes('half') || lowercaseValue.includes('less')) {
+                        return 'HalfTime';
+                    }
+                    if (lowercaseValue.includes('double') || lowercaseValue.includes('twice') || lowercaseValue.includes('more')) {
+                        return 'DoubleTime';
+                    }
+                }
+            }
+            
+            if (optionValue) {
+                return optionValue.id;
+            }
+
+            for (const v of option.values) {
+                if (v.name.toLowerCase().includes(lowercaseValue) || 
+                    lowercaseValue.includes(v.name.toLowerCase())) {
+                    return v.id;
+                }
+            }
+        }
+
+        return value;
+    }
+
+    function mergeVariants(importedVariants) {
+        if (!importedVariants || importedVariants.length === 0) return;
+        
+        importedVariants.forEach(importedVariant => {
+            const existingIndex = customVariants.findIndex(v => v.name === importedVariant.name);
+            
+            if (existingIndex !== -1) {
+                customVariants[existingIndex] = importedVariant;
+            } else {
+                customVariants.push(importedVariant);
+            }
+        });
+    }
+
+    function mergeMatches(importedMatches) {
+        if (!importedMatches || importedMatches.length === 0) return;
+        
+        importedMatches.forEach(importedMatch => {
+            matches.push(importedMatch);
+        });
+    }
+
+    function keyToSettingId(key) {
+        const keyMappings = {
+            'score to win': 'scoreToWinRound', // Map both to scoreToWinRound
+            'score to win round': 'scoreToWinRound',
+            'time limit': 'timeLimit',
+            'number of rounds': 'numberOfRounds',
+            'rounds to win': 'roundsToWin',
+            'lives per round': 'livesPerRound',
+            'respawn time': 'respawnTime',
+            'respawn on death': 'respawnOnDeath',
+            'respawn growth': 'respawnGrowth',
+            'suicide penalty': 'suicidePenalty',
+            'betrayal penalty': 'betrayalPenalty',
+            'friendly fire': 'friendlyFire',
+            'indestructible vehicles': 'indestructibleVehicles',
+            'shields': 'shields',
+            'starting equipment': 'startingEquipment',
+            'invisibility': 'invisibility',
+            'starting grenades': 'startingGrenades',
+            'infinite grenades': 'infiniteGrenades',
+            'moving hill': 'movingHill',
+            'uncontested hill': 'uncontestedHill',
+            'team time multiplier': 'teamTimeMultiplier',
+            'active camo on hill': 'activeCamoOnHill',
+            'extra damage on hill': 'extraDamageOnHill',
+            'damage resistance on hill': 'damageResistanceOnHill',
+            'weapon respawn time': 'weaponRespawnTime',
+            'weapon set': 'weaponSet',
+            'team play': 'teamPlay',
+            'team scoring': 'teamScoring'
+        };
+
+        const lowercaseKey = key.toLowerCase();
+        if (keyMappings[lowercaseKey]) {
+            return keyMappings[lowercaseKey];
+        }
+
+        let settingId = null;
+
+        [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
+         SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+         ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
+            if (!optionCategory) return;
+            
+            const option = optionCategory.find(opt => 
+                opt.name.toLowerCase() === lowercaseKey
+            );
+            if (option && option.id) {
+                settingId = option.id;
+            }
+        });
+
+        if (settingId) {
+            return settingId;
+        }
+
+        return key
+            .toLowerCase()
+            .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+                return index === 0 ? word.toLowerCase() : word.toUpperCase();
+            })
+            .replace(/\s+/g, '');
     }
 
 }); 

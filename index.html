@@ -25,7 +25,7 @@
     <main>
         <div class="container">
             <div class="playlist-settings section">
-                <h2>Playlist Settings <button id="clear-all" class="btn-danger">Clear All</button></h2>
+                <h2>Playlist Settings <button id="clear-all" class="btn-danger">Clear All</button><button id="import-hpl" class="btn-import">Import .hpl File</button></h2>
                 <div class="form-group">
                     <label for="playlistName">Playlist Name</label>
                     <input type="text" id="playlistName" placeholder="My Custom Playlist">
@@ -251,6 +251,7 @@
         <p><a href="https://www.halo2pc.com" target="_blank">Halo2PC.com</a></p>
     </footer>
 
+    <input type="file" id="hpl-file-input" accept=".hpl" style="display: none;">
     <script src="data.js"></script>
     <script src="script.js"></script>
 </body>
