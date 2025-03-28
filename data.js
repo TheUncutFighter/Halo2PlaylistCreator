@@ -101,22 +101,22 @@ const MATCH_OPTIONS = [
         description: "A round can be set to end after a set amount of time has elapsed. Use this to prevent games from lasting too long.",
         values: [
             { id: "None", name: "None" },
-            { id: "1Minute", name: "1 minute" },
-            { id: "2Minutes", name: "2 minutes" },
-            { id: "3Minutes", name: "3 minutes" },
-            { id: "4Minutes", name: "4 minutes" },
-            { id: "5Minutes", name: "5 minutes" },
-            { id: "6Minutes", name: "6 minutes" },
-            { id: "7Minutes", name: "7 minutes" },
-            { id: "8Minutes", name: "8 minutes" },
-            { id: "9Minutes", name: "9 minutes" },
-            { id: "10Minutes", name: "10 minutes" },
-            { id: "12Minutes", name: "12 minutes" },
-            { id: "15Minutes", name: "15 minutes" },
-            { id: "20Minutes", name: "20 minutes" },
-            { id: "30Minutes", name: "30 minutes" },
-            { id: "45Minutes", name: "45 minutes" },
-            { id: "1Hour", name: "1 hour" }
+            { id: "1Minute", name: "1 Minute" },
+            { id: "2Minutes", name: "2 Minutes" },
+            { id: "3Minutes", name: "3 Minutes" },
+            { id: "4Minutes", name: "4 Minutes" },
+            { id: "5Minutes", name: "5 Minutes" },
+            { id: "6Minutes", name: "6 Minutes" },
+            { id: "7Minutes", name: "7 Minutes" },
+            { id: "8Minutes", name: "8 Minutes" },
+            { id: "9Minutes", name: "9 Minutes" },
+            { id: "10Minutes", name: "10 Minutes" },
+            { id: "12Minutes", name: "12 Minutes" },
+            { id: "15Minutes", name: "15 Minutes" },
+            { id: "20Minutes", name: "20 Minutes" },
+            { id: "30Minutes", name: "30 Minutes" },
+            { id: "45Minutes", name: "45 Minutes" },
+            { id: "1Hour", name: "1 Hour" }
         ]
     },
     {
@@ -160,11 +160,9 @@ const PLAYER_SETTINGS = [
             { id: "1", name: "1" },
             { id: "2", name: "2" },
             { id: "3", name: "3" },
-            { id: "5", name: "5" },
             { id: "7", name: "7" },
-            { id: "10", name: "10" },
-            { id: "99", name: "99" },
-            { id: "custom", name: "Custom..." }
+            { id: "9", name: "9" },
+            { id: "99", name: "99" }
         ]
     },
     {
@@ -172,12 +170,12 @@ const PLAYER_SETTINGS = [
         name: "Respawn Time",
         description: "Respawn Time controls the amount of time that a dead player must wait before getting another chance at life.",
         values: [
-            { id: "3Seconds", name: "3 seconds", default: false },
-            { id: "5Seconds", name: "5 seconds", default: true },
-            { id: "10Seconds", name: "10 seconds", default: false },
-            { id: "15Seconds", name: "15 seconds", default: false },
-            { id: "20Seconds", name: "20 seconds", default: false },
-            { id: "30Seconds", name: "30 seconds", default: false }
+            { id: "3Seconds", name: "3 Seconds", default: false },
+            { id: "5Seconds", name: "5 Seconds", default: true },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false },
+            { id: "20Seconds", name: "20 Seconds", default: false },
+            { id: "30Seconds", name: "30 Seconds", default: false }
         ]
     },
     {
@@ -186,9 +184,9 @@ const PLAYER_SETTINGS = [
         description: "When you kill yourself you will have to wait the time specified for Suicide Penalty in addition to any other wait time before you respawn.",
         values: [
             { id: "None", name: "None" },
-            { id: "5Seconds", name: "5 seconds" },
-            { id: "10Seconds", name: "10 seconds" },
-            { id: "15Seconds", name: "15 seconds" }
+            { id: "5Seconds", name: "5 Seconds" },
+            { id: "10Seconds", name: "10 Seconds" },
+            { id: "15Seconds", name: "15 Seconds" }
         ]
     },
     {
@@ -294,12 +292,12 @@ const TEAM_OPTIONS = [
         description: "This setting determines an additional amount of time a team killer will have to wait before respawning.",
         values: [
             { id: "None", name: "None" },
-            { id: "5Seconds", name: "5 seconds" },
-            { id: "10Seconds", name: "10 seconds" },
-            { id: "15Seconds", name: "15 seconds" },
-            { id: "30Seconds", name: "30 seconds" },
-            { id: "1Minute", name: "1 minute" },
-            { id: "2Minutes", name: "2 minutes" }
+            { id: "5Seconds", name: "5 Seconds" },
+            { id: "10Seconds", name: "10 Seconds" },
+            { id: "15Seconds", name: "15 Seconds" },
+            { id: "30Seconds", name: "30 Seconds" },
+            { id: "1Minute", name: "1 Minute" },
+            { id: "2Minutes", name: "2 Minutes" }
         ]
     },
     {
@@ -321,7 +319,7 @@ const VEHICLE_OPTIONS = [
         description: "Vehicle respawn time determines how quickly dead vehicles come back to life. Times are relative to the default settings for the map.",
         values: [
             { id: "MapDefault", name: "Map Default" },
-            { id: "HalfAsOften", name: "Half As Often" },
+            { id: "HalfTime", name: "Half Time" },
             { id: "NoRespawn", name: "No Respawn" }
         ]
     },
@@ -510,7 +508,7 @@ const EQUIPMENT_OPTIONS = [
     },
     {
         id: "overshields",
-        name: "Overshields on Map",
+        name: "Overshields On Map",
         description: "This setting controls whether or not the Overshield powerup is available on the map.",
         values: [
             { id: "On", name: "On" },
@@ -519,7 +517,7 @@ const EQUIPMENT_OPTIONS = [
     },
     {
         id: "activeCamoOnMap",
-        name: "Active Camo on Map",
+        name: "Active Camo On Map",
         description: "This setting controls whether or not the Active Camouflage powerup is available on the map.",
         values: [
             { id: "On", name: "On" },
@@ -587,11 +585,11 @@ const KOTH_OPTIONS = [
         description: "You accumulate time in King of the Hill by standing on the hill. This setting determines the amount of time you must earn in order to win a round.",
         values: [
             { id: "Off", name: "Off", default: false },
-            { id: "30Seconds", name: "30 seconds", default: false },
-            { id: "1Minute", name: "1 minute", default: false },
-            { id: "2Minutes", name: "2 minutes", default: true },
-            { id: "3Minutes", name: "3 minutes", default: false },
-            { id: "5Minutes", name: "5 minutes", default: false }
+            { id: "30Seconds", name: "30 Seconds", default: false },
+            { id: "1Minute", name: "1 Minute", default: false },
+            { id: "2Minutes", name: "2 Minutes", default: true },
+            { id: "3Minutes", name: "3 Minutes", default: false },
+            { id: "5Minutes", name: "5 Minutes", default: false }
         ]
     },
     {
@@ -609,11 +607,11 @@ const KOTH_OPTIONS = [
         description: "The hill will change to a new random location at the set interval.",
         values: [
             { id: "Off", name: "Off", default: true },
-            { id: "30Seconds", name: "30 seconds", default: false },
-            { id: "1Minute", name: "1 minute", default: false },
-            { id: "2Minutes", name: "2 minutes", default: false },
-            { id: "3Minutes", name: "3 minutes", default: false },
-            { id: "5Minutes", name: "5 minutes", default: false }
+            { id: "30Seconds", name: "30 Seconds", default: false },
+            { id: "1Minute", name: "1 Minute", default: false },
+            { id: "2Minutes", name: "2 Minutes", default: false },
+            { id: "3Minutes", name: "3 Minutes", default: false },
+            { id: "5Minutes", name: "5 Minutes", default: false }
         ]
     },
     {
@@ -662,14 +660,14 @@ const ODDBALL_OPTIONS = [
         description: "You accumulate time in Oddball by holding the ball. This setting determines the amount of time you must earn in order to win a round.",
         values: [
             { id: "Off", name: "Off", default: false },
-            { id: "30Seconds", name: "30 seconds", default: false },
-            { id: "1Minute", name: "1 minute", default: false },
-            { id: "2Minutes", name: "2 minutes", default: true },
-            { id: "3Minutes", name: "3 minutes", default: false },
-            { id: "5Minutes", name: "5 minutes", default: false },
-            { id: "7Minutes", name: "7 minutes", default: false },
-            { id: "10Minutes", name: "10 minutes", default: false },
-            { id: "15Minutes", name: "15 minutes", default: false }
+            { id: "30Seconds", name: "30 Seconds", default: false },
+            { id: "1Minute", name: "1 Minute", default: false },
+            { id: "2Minutes", name: "2 Minutes", default: true },
+            { id: "3Minutes", name: "3 Minutes", default: false },
+            { id: "5Minutes", name: "5 Minutes", default: false },
+            { id: "7Minutes", name: "7 Minutes", default: false },
+            { id: "10Minutes", name: "10 Minutes", default: false },
+            { id: "15Minutes", name: "15 Minutes", default: false }
         ]
     },
     {
@@ -677,9 +675,9 @@ const ODDBALL_OPTIONS = [
         name: "Ball Count",
         description: "This controls the number of balls in the game. More balls equals more chaos, but that's not always a good thing.",
         values: [
-            { id: "1", name: "1 ball", default: true },
-            { id: "2", name: "2 balls", default: false },
-            { id: "3", name: "3 balls", default: false }
+            { id: "1 ball", name: "1 ball", default: true },
+            { id: "2 balls", name: "2 balls", default: false },
+            { id: "3 balls", name: "3 balls", default: false }
         ]
     },
     {
@@ -751,8 +749,8 @@ const JUGGERNAUT_OPTIONS = [
             { id: "Unlimited", name: "Unlimited", default: false },
             { id: "1", name: "1", default: false },
             { id: "3", name: "3", default: false },
-            { id: "5", name: "5", default: false },
-            { id: "10", name: "10", default: true },
+            { id: "5", name: "5", default: true },
+            { id: "10", name: "10", default: false },
             { id: "15", name: "15", default: false },
             { id: "20", name: "20", default: false },
             { id: "25", name: "25", default: false },
@@ -892,12 +890,12 @@ const CTF_OPTIONS = [
         name: "Flag Reset Time",
         description: "The time that must elapse before a dropped flag returns home. An enemy near a flag pauses this timer, an enemy picking it up resets it. (Default = 30 sec)",
         values: [
-            { id: "5Seconds", name: "5 seconds", default: false },
-            { id: "10Seconds", name: "10 seconds", default: false },
-            { id: "15Seconds", name: "15 seconds", default: false },
-            { id: "30Seconds", name: "30 seconds", default: true },
-            { id: "45Seconds", name: "45 seconds", default: false },
-            { id: "60Seconds", name: "60 seconds", default: false }
+            { id: "5Seconds", name: "5 Seconds", default: false },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false },
+            { id: "30Seconds", name: "30 Seconds", default: true },
+            { id: "45Seconds", name: "45 Seconds", default: false },
+            { id: "60Seconds", name: "60 Seconds", default: false }
         ]
     },
     {
@@ -975,75 +973,79 @@ const ASSAULT_OPTIONS = [
     {
         id: "bombType",
         name: "Bomb Type",
-        description: "Single Bomb has one team defending and one attacking. Multi-Team Bomb gives each team their own bomb to attack with. Neutral Bomb lets any team use a single bomb.",
+        description: "In Single Bomb there is only one defending team. In Bomb Per Team, each team has a bomb and must play offense and defense at the same time. In Neutral Bomb there is a single bomb that any team may use.",
         values: [
             { id: "SingleBomb", name: "Single Bomb", default: false },
-            { id: "MultiTeamBomb", name: "Multi-Team Bomb", default: true },
+            { id: "BombPerTeam", name: "Bomb Per Team", default: true },
             { id: "NeutralBomb", name: "Neutral Bomb", default: false }
+        ]
+    },
+    {
+        id: "enemyBombIndicator",
+        name: "Enemy Bomb Indicator",
+        description: "Determines if and when defenders have an indicator showing the location of an enemy bomb. (Default = when dropped)",
+        values: [
+            { id: "AlwaysOn", name: "Always On", default: false },
+            { id: "WhenDropped", name: "When Dropped", default: true },
+            { id: "WhenArmed", name: "When Armed", default: false },
+            { id: "Off", name: "Off", default: false }
         ]
     },
     {
         id: "suddenDeath",
         name: "Sudden Death",
-        description: "When Sudden Death is enabled, a round will not end while a bomb is being carried or armed. This can lead to exciting final moments.",
+        description: "When enabled, a round will not end while a bomb is being carried or contested. This can lead to tense final moments. (Default = on)",
         values: [
             { id: "On", name: "On", default: true },
             { id: "Off", name: "Off", default: false }
         ]
     },
     {
+        id: "bombTouchReturn",
+        name: "Bomb Touch Return",
+        description: "When on, you may reset an enemy bomb to its original location by touching it. (Default = Off)",
+        values: [
+            { id: "On", name: "On", default: false },
+            { id: "Off", name: "Off", default: true }
+        ]
+    },
+    {
         id: "bombResetTime",
         name: "Bomb Reset Time",
-        description: "The time that must elapse before a dropped bomb returns home. An enemy near a bomb pauses this timer, an enemy picking it up resets it.",
+        description: "The time that must elapse before a dropped bomb resets to its original location. Getting close to your bomb freezes this timer; picking it up resets it. (Default = 30 seconds)",
         values: [
-            { id: "5Seconds", name: "5 seconds", default: false },
-            { id: "10Seconds", name: "10 seconds", default: false },
-            { id: "15Seconds", name: "15 seconds", default: false },
-            { id: "30Seconds", name: "30 seconds", default: true },
-            { id: "45Seconds", name: "45 seconds", default: false },
-            { id: "60Seconds", name: "60 seconds", default: false }
+            { id: "5Seconds", name: "5 Seconds", default: false },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false },
+            { id: "20Seconds", name: "20 Seconds", default: false },
+            { id: "30Seconds", name: "30 Seconds", default: true },
+            { id: "45Seconds", name: "45 Seconds", default: false },
+            { id: "60Seconds", name: "60 Seconds", default: false }
         ]
     },
     {
-        id: "bombArmingTime",
-        name: "Bomb Arming Time",
-        description: "The amount of time a player must stand over the enemy's bomb site to arm the bomb.",
+        id: "bombArmTime",
+        name: "Bomb Arm Time",
+        description: "The time it takes to arm the bomb after you've carried it inside the arming zone near the enemy bomb post.",
         values: [
-            { id: "3Seconds", name: "3 seconds", default: true },
-            { id: "5Seconds", name: "5 seconds", default: false },
-            { id: "10Seconds", name: "10 seconds", default: false },
-            { id: "15Seconds", name: "15 seconds", default: false },
-            { id: "30Seconds", name: "30 seconds", default: false }
+            { id: "5Seconds", name: "5 Seconds", default: true },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false }
         ]
     },
     {
-        id: "bombFuseDuration",
-        name: "Bomb Fuse Duration",
-        description: "The amount of time between when a bomb is armed and when it explodes, scoring a point for the attacking team.",
+        id: "stickyArming",
+        name: "Sticky Arming",
+        description: "When on, you can pick up a partially armed bomb and resume arming it where someone else left off. (Default = on)",
         values: [
-            { id: "5Seconds", name: "5 seconds", default: false },
-            { id: "10Seconds", name: "10 seconds", default: true },
-            { id: "15Seconds", name: "15 seconds", default: false },
-            { id: "30Seconds", name: "30 seconds", default: false },
-            { id: "45Seconds", name: "45 seconds", default: false },
-            { id: "60Seconds", name: "60 seconds", default: false }
-        ]
-    },
-    {
-        id: "bombDisarmingTime",
-        name: "Bomb Disarming Time",
-        description: "The amount of time a defending player must stand over an armed bomb to disarm it.",
-        values: [
-            { id: "3Seconds", name: "3 seconds", default: true },
-            { id: "5Seconds", name: "5 seconds", default: false },
-            { id: "10Seconds", name: "10 seconds", default: false },
-            { id: "15Seconds", name: "15 seconds", default: false }
-        ]
+            { id: "On", name: "On", default: true },
+            { id: "Off", name: "Off", default: false }
+         ]
     },
     {
         id: "slowWithBomb",
         name: "Slow With Bomb",
-        description: "When Slow With Bomb is on, the bomb carrier moves at a slower pace than other players.",
+        description: "When on, the bomb carrier moves at a slower pace than other players. (Default = on)",
         values: [
             { id: "On", name: "On", default: true },
             { id: "Off", name: "Off", default: false }
@@ -1052,16 +1054,16 @@ const ASSAULT_OPTIONS = [
     {
         id: "bombHitDamage",
         name: "Bomb Hit Damage",
-        description: "The bomb is a weapon. This setting determines whether melee attacking someone with it hurts a little or a lot.",
+        description: "The Bomb is a weapon. This determines whether a melee attack with the bomb hurts a little (normal) or is deadly (massive). (default = massive/deadly)",
         values: [
-            { id: "Normal", name: "Normal", default: false },
-            { id: "Massive", name: "Massive", default: true }
+            { id: "Massive", name: "Massive", default: true },
+            { id: "Normal", name: "Normal", default: false }
         ]
     },
     {
         id: "damageResistanceWithBomb",
         name: "Damage Resistance With Bomb",
-        description: "When this is on, a player carrying the bomb is tougher than normal.",
+        description: "When on, a player carrying the bomb is tougher than normal. (Default = off)",
         values: [
             { id: "On", name: "On", default: false },
             { id: "Off", name: "Off", default: true }
@@ -1070,7 +1072,7 @@ const ASSAULT_OPTIONS = [
     {
         id: "activeCamoWithBomb",
         name: "Active Camo With Bomb",
-        description: "When this is on, a player carrying the bomb is invisible.",
+        description: "When on, a player carrying the bomb is invisible with active camo. (Default = off)",
         values: [
             { id: "On", name: "On", default: false },
             { id: "Off", name: "Off", default: true }
@@ -1079,20 +1081,10 @@ const ASSAULT_OPTIONS = [
     {
         id: "vehicleOperation",
         name: "Vehicle Operation",
-        description: "If this is disabled, a player carrying the bomb cannot drive vehicles or operate stationary or vehicle-mounted guns.",
+        description: "If off, a player carrying the bomb cannot drive vehicles or operate stationary or vehicle-mounted guns. (Default = off)",
         values: [
             { id: "On", name: "On", default: false },
             { id: "Off", name: "Off", default: true }
-        ]
-    },
-    {
-        id: "bombIndicator",
-        name: "Bomb Indicator",
-        description: "This setting controls if and when you see an indicator revealing the location of the bomb.",
-        values: [
-            { id: "WhenUncontrolled", name: "When Uncontrolled", default: true },
-            { id: "AlwaysOn", name: "Always On", default: false },
-            { id: "Off", name: "Off", default: false }
         ]
     }
 ];
@@ -1105,82 +1097,61 @@ const TERRITORIES_OPTIONS = [
         description: "You accumulate time in Territories by controlling territory points. This setting determines the amount of time you must earn in order to win a round.",
         values: [
             { id: "Off", name: "Off", default: false },
-            { id: "1Minute", name: "1 minute", default: false },
-            { id: "2Minutes", name: "2 minutes", default: false },
-            { id: "3Minutes", name: "3 minutes", default: true },
-            { id: "5Minutes", name: "5 minutes", default: false },
-            { id: "10Minutes", name: "10 minutes", default: false },
-            { id: "15Minutes", name: "15 minutes", default: false }
+            { id: "1Minute", name: "1 Minute", default: false },
+            { id: "2Minutes", name: "2 Minutes", default: false },
+            { id: "3Minutes", name: "3 Minutes", default: true },
+            { id: "5Minutes", name: "5 Minutes", default: false },
+            { id: "7Minutes", name: "7 Minutes", default: false },
+            { id: "10Minutes", name: "10 Minutes", default: false },
+            { id: "15Minutes", name: "15 Minutes", default: false },
+            { id: "20Minutes", name: "20 Minutes", default: false },
+            { id: "30Minutes", name: "30 Minutes", default: false }
         ]
     },
     {
         id: "territoryCount",
         name: "Territory Count",
-        description: "Sets how many territories are active on the map. Default uses the map's standard setup.",
+        description: "This setting determines the maximum number of territories on the map. Notes: Not all maps have this many territories. (Default = 3)",
         values: [
-            { id: "Default", name: "Default", default: true },
-            { id: "One", name: "One", default: false },
-            { id: "Two", name: "Two", default: false },
-            { id: "Three", name: "Three", default: false },
-            { id: "Four", name: "Four", default: false },
-            { id: "Five", name: "Five", default: false }
+            { id: "1Territory", name: "1 Territory", default: false },
+            { id: "2Territories", name: "2 Territories", default: false },
+            { id: "3Territories", name: "3 Territories", default: true },
+            { id: "4Territories", name: "4 Territories", default: false },
+            { id: "5Territories", name: "5 Territories", default: false },
+            { id: "6Territories", name: "6 Territories", default: false },
+            { id: "7Territories", name: "7 Territories", default: false },
+            { id: "8Territroies", name: "8 Territories", default: false }
         ]
     },
     {
-        id: "territoryMovement",
-        name: "Territory Movement",
-        description: "The territories will change to new random locations at the set interval.",
+        id: "contestTime",
+        name: "Contest Time",
+        description: "This setting determines the amount of time it takes to undo someone else's control of a territory. (Default = 5 seconds)",
         values: [
-            { id: "Off", name: "Off", default: true },
-            { id: "30Seconds", name: "30 seconds", default: false },
-            { id: "1Minute", name: "1 minute", default: false },
-            { id: "2Minutes", name: "2 minutes", default: false },
-            { id: "3Minutes", name: "3 minutes", default: false }
+            { id: "3Seconds", name: "3 Seconds", default: false },
+            { id: "5Seconds", name: "5 Seconds", default: true },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false },
+            { id: "20Seconds", name: "20 Seconds", default: false },
+            { id: "30Seconds", name: "30 Seconds", default: false }
         ]
     },
     {
-        id: "incrementalScoring",
-        name: "Incremental Scoring",
-        description: "When on, players earn points continuously while controlling territories. When off, points are only awarded at fixed intervals.",
+        id: "controlTime",
+        name: "Control Time",
+        description: "This settings determines how long it takes to gain control of a neutral territory. Enemy territories must first be contested, then controlled. (Default = 5 seconds)",
         values: [
-            { id: "On", name: "On", default: true },
-            { id: "Off", name: "Off", default: false }
-        ]
-    },
-    {
-        id: "lockoutBonus",
-        name: "Lockout Bonus",
-        description: "When on, controlling all territories gives a significant scoring bonus.",
-        values: [
-            { id: "On", name: "On", default: false },
-            { id: "Off", name: "Off", default: true }
-        ]
-    },
-    {
-        id: "extraDamageOnTerritory",
-        name: "Extra Damage On Territory",
-        description: "When on, a player on a controlled territory will be more powerful than other players.",
-        values: [
-            { id: "On", name: "On", default: false },
-            { id: "Off", name: "Off", default: true }
-        ]
-    },
-    {
-        id: "damageResistanceOnTerritory",
-        name: "Damage Resistance On Territory",
-        description: "When on, a player on a controlled territory will be tougher than normal.",
-        values: [
-            { id: "On", name: "On", default: false },
-            { id: "Off", name: "Off", default: true }
-        ]
-    },
-    {
-        id: "activeCamoOnTerritory",
-        name: "Active Camo On Territory",
-        description: "When on, a player standing on a controlled territory will have Active Camo.",
-        values: [
-            { id: "On", name: "On", default: false },
-            { id: "Off", name: "Off", default: true }
+            { id: "3Seconds", name: "3 Seconds", default: false },
+            { id: "5Seconds", name: "5 Seconds", default: true },
+            { id: "10Seconds", name: "10 Seconds", default: false },
+            { id: "15Seconds", name: "15 Seconds", default: false },
+            { id: "20Seconds", name: "20 Seconds", default: false },
+            { id: "30Seconds", name: "30 Seconds", default: false }
         ]
     }
-]; 
+];
+
+// Special case handling for weapon respawn time
+if (key === 'weaponRespawnTime' && value === 'Half as Often') {
+    formattedValue = 'Half Time';
+}

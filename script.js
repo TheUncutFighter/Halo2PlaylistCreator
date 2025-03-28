@@ -109,6 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setupVariantCreator();
         
+        // Hide the preview container on initial load
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        
         document.addEventListener('change', function(e) {
             if (e.target.id === 'livesPerRound' && e.target.value === 'custom') {
                 const customLives = prompt('Enter custom number of lives (1-999):', '5');
@@ -233,6 +239,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const copyPlaylistBtn = document.getElementById('copy-playlist');
         if (copyPlaylistBtn) {
             copyPlaylistBtn.addEventListener('click', copyPlaylistToClipboard);
+        }
+        
+        // Advanced options toggle
+        const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+        if (advancedOptionsToggle) {
+            advancedOptionsToggle.addEventListener('click', function() {
+                const content = document.getElementById('advanced-options-content');
+                const toggleIcon = this.querySelector('.toggle-icon');
+                
+                if (content.style.display === 'none' || !content.style.display) {
+                    content.style.display = 'block';
+                    toggleIcon.textContent = '-';
+                } else {
+                    content.style.display = 'none';
+                    toggleIcon.textContent = '+';
+                }
+            });
+        }
+        
+        // Weight toggle checkbox
+        const enableWeightCheckbox = document.getElementById('enableWeight');
+        if (enableWeightCheckbox) {
+            enableWeightCheckbox.addEventListener('change', function() {
+                const weightInput = document.getElementById('matchWeight');
+                if (weightInput) {
+                    weightInput.disabled = !this.checked;
+                    weightInput.style.opacity = this.checked ? '1' : '0.5';
+                }
+            });
         }
 
         document.querySelectorAll('.modal').forEach(modal => {
@@ -708,127 +743,98 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function saveVariant() {
-        const variantNameInput = document.getElementById('variantName');
-        const variantName = variantNameInput.value.trim();
+        closeAllTooltips();
+        
+        const variantName = document.getElementById('variantName').value.trim();
         
         if (!variantName) {
-            showValidationError(variantNameInput, 'Please enter a variant name');
+            showValidationError(document.getElementById('variantName'), 'Please enter a variant name');
             return;
         }
         
-        if (variantName.length > 16) {
-            showValidationError(variantNameInput, 'Variant name cannot exceed 16 characters');
+        // Check if the name conflicts with built-in variants
+        const nameConflict = checkVariantNameConflict(variantName);
+        if (nameConflict && (currentEditIndex === -1 || customVariants[currentEditIndex].name !== variantName)) {
+            showValidationError(document.getElementById('variantName'), 'This name is already in use. Please choose a different name.');
             return;
         }
         
-        // Check if name conflicts with base variants as the game overides the custom variant and uses the default base game varaint
-        if (checkVariantNameConflict(variantName)) {
-            showValidationError(variantNameInput, 'Cannot use the same name as a base variant');
-            return;
+        // Get the selected game type
+        const gameTypeSelect = document.getElementById('gameType');
+        const gameType = gameTypeSelect.value;
+        
+        // Create an object to store all variant settings
+        const settings = {};
+        
+        // Collect values from all option inputs
+        [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS].forEach(optionCategory => {
+            optionCategory.forEach(option => {
+                const element = document.getElementById(`option-${keyToSettingId(option.id)}`);
+                if (element) {
+                    settings[option.id] = element.value;
+                }
+            });
+        });
+        
+        // Get game-specific options based on the selected game type
+        let gameSpecificOptions = [];
+        
+        if (gameType === 'Slayer') {
+            gameSpecificOptions = SLAYER_OPTIONS;
+        } else if (gameType === 'KingOfTheHill') {
+            gameSpecificOptions = KOTH_OPTIONS;
+        } else if (gameType === 'Oddball') {
+            gameSpecificOptions = ODDBALL_OPTIONS;
+        } else if (gameType === 'Juggernaut') {
+            gameSpecificOptions = JUGGERNAUT_OPTIONS;
+        } else if (gameType === 'CaptureTheFlag') {
+            gameSpecificOptions = CTF_OPTIONS;
+        } else if (gameType === 'Assault') {
+            gameSpecificOptions = ASSAULT_OPTIONS;
+        } else if (gameType === 'Territories') {
+            gameSpecificOptions = TERRITORIES_OPTIONS;
         }
         
-        // Check if name already exists in custom variants (except when editing)
-        if (currentEditIndex === -1 && customVariants.some(v => v.name === variantName)) {
-            if (!confirm('A variant with this name already exists. Do you want to replace it?')) {
-                return;
+        // Collect values from game-specific options
+        gameSpecificOptions.forEach(option => {
+            const element = document.getElementById(`option-${keyToSettingId(option.id)}`);
+            if (element) {
+                settings[option.id] = element.value;
             }
-            customVariants = customVariants.filter(v => v.name !== variantName);
-        }
+        });
         
-        // Always use game type method since creation method dropdown is hidden
-            const gameTypeId = document.getElementById('gameType').value;
-        
-        const variant = {
+        // Create the variant object
+        const variantObject = {
+            id: variantName.replace(/\s+/g, ''),
             name: variantName,
-            gameType: gameTypeId,
-            settings: {}
+            gameType: gameType,
+            settings: settings
         };
         
-        // Match options
-        MATCH_OPTIONS.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
-        // Player settings
-        PLAYER_SETTINGS.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
-        // Team options
-        TEAM_OPTIONS.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
-        // Vehicle options
-        VEHICLE_OPTIONS.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
-        // Equipment options
-        EQUIPMENT_OPTIONS.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
-        // Game-specific options
-        let gameSpecificOptions = [];
-        switch(gameTypeId) {
-            case 'Slayer':
-                gameSpecificOptions = SLAYER_OPTIONS;
-                break;
-            case 'KingOfTheHill':
-                gameSpecificOptions = KOTH_OPTIONS;
-                break;
-            case 'Oddball':
-                gameSpecificOptions = ODDBALL_OPTIONS;
-                break;
-            case 'Juggernaut':
-                gameSpecificOptions = JUGGERNAUT_OPTIONS;
-                break;
-            case 'CaptureTheFlag':
-                gameSpecificOptions = CTF_OPTIONS;
-                break;
-            case 'Assault':
-                gameSpecificOptions = ASSAULT_OPTIONS;
-                break;
-            case 'Territories':
-                gameSpecificOptions = TERRITORIES_OPTIONS;
-                break;
-        }
-        
-        gameSpecificOptions.forEach(option => {
-            const select = document.getElementById(option.id);
-            if (select && select.value) {
-                variant.settings[option.id] = select.value;
-            }
-        });
-        
+        // Add or update the variant
         if (currentEditIndex !== -1) {
-            customVariants[currentEditIndex] = variant;
-            currentEditIndex = -1;
+            customVariants[currentEditIndex] = variantObject;
         } else {
-        customVariants.push(variant);
+            customVariants.push(variantObject);
         }
         
-        updateCustomVariantsList();
-        
+        // Save to local storage
         saveToLocalStorage();
         
+        // Reset the edit index
+        currentEditIndex = -1;
+        
+        // Hide the modal
         closeModal('custom-variant-modal');
+        
+        // Update the variants list
+        updateCustomVariantsList();
+        
+        // Update the variants dropdown in the match modal
+        populateMatchVariantsDropdown();
+        
+        // Reset the playlist preview if it was previously generated
+        resetPlaylistPreview();
     }
 
     function saveMatch() {
@@ -859,6 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedMaps = Array.from(mapCheckboxes).map(checkbox => checkbox.value);
         
         const weightInput = document.getElementById('matchWeight');
+        const weightCheckbox = document.getElementById('enableWeight');
         const minPlayersSelect = document.getElementById('matchMinPlayers');
         const maxPlayersSelect = document.getElementById('matchMaxPlayers');
         
@@ -867,11 +874,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const weight = parseInt(weightInput.value, 10) || 100;
+        const useWeight = weightCheckbox ? weightCheckbox.checked : true;
+        const weight = useWeight ? (parseInt(weightInput.value, 10) || 100) : undefined;
         const minPlayers = parseInt(minPlayersSelect.value, 10) || 1;
         const maxPlayers = parseInt(maxPlayersSelect.value, 10) || 16;
         
-        if (weight < 1 || weight > 1000) {
+        if (useWeight && (weight < 1 || weight > 1000)) {
             showValidationError(weightInput, 'Weight must be between 1 and 1000.');
             return;
         }
@@ -898,6 +906,9 @@ document.addEventListener('DOMContentLoaded', function() {
         saveToLocalStorage();
         
         closeModal('match-modal');
+        
+        // Reset the playlist preview if it was previously generated
+        resetPlaylistPreview();
     }
 
     function updateCustomVariantsList() {
@@ -1130,6 +1141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             customVariants.splice(index, 1);
             updateCustomVariantsList();
             saveToLocalStorage();
+            resetPlaylistPreview();
         }
     }
 
@@ -1153,8 +1165,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Initialize weight checkbox and input
+        const enableWeightCheckbox = document.getElementById('enableWeight');
         const weightInput = document.getElementById('matchWeight');
-        if (weightInput) {
+        
+        if (enableWeightCheckbox && weightInput) {
+            const hasWeight = match.weight !== undefined;
+            enableWeightCheckbox.checked = hasWeight;
+            weightInput.disabled = !hasWeight;
+            weightInput.style.opacity = hasWeight ? '1' : '0.5';
+            
+            if (hasWeight) {
+                weightInput.value = match.weight || 100;
+            }
+        } else if (weightInput) {
             weightInput.value = match.weight || 100;
         }
         
@@ -1166,6 +1190,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const maxPlayersSelect = document.getElementById('matchMaxPlayers');
         if (maxPlayersSelect) {
             maxPlayersSelect.value = match.maxPlayers || 16;
+        }
+        
+        // Show advanced options by default when editing
+        const advancedOptionsContent = document.getElementById('advanced-options-content');
+        const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+        
+        if (advancedOptionsContent) {
+            advancedOptionsContent.style.display = 'block';
+        }
+        
+        if (advancedOptionsToggle) {
+            const toggleIcon = advancedOptionsToggle.querySelector('.toggle-icon');
+            if (toggleIcon) {
+                toggleIcon.textContent = '-';
+            }
         }
         
         const saveMatchBtn = document.getElementById('save-match');
@@ -1206,9 +1245,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const selectedMap = mapCheckboxes[0].value;
+        // Get all selected maps, not just the first one
+        const selectedMaps = Array.from(mapCheckboxes).map(checkbox => checkbox.value);
         
         const weightInput = document.getElementById('matchWeight');
+        const weightCheckbox = document.getElementById('enableWeight');
         const minPlayersSelect = document.getElementById('matchMinPlayers');
         const maxPlayersSelect = document.getElementById('matchMaxPlayers');
         
@@ -1217,11 +1258,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const weight = parseInt(weightInput.value, 10) || 100;
+        const useWeight = weightCheckbox ? weightCheckbox.checked : true;
+        const weight = useWeight ? (parseInt(weightInput.value, 10) || 100) : undefined;
         const minPlayers = parseInt(minPlayersSelect.value, 10) || 1;
         const maxPlayers = parseInt(maxPlayersSelect.value, 10) || 16;
         
-        if (weight < 1 || weight > 1000) {
+        if (useWeight && (weight < 1 || weight > 1000)) {
             showValidationError(weightInput, 'Weight must be between 1 and 1000.');
             return;
         }
@@ -1231,20 +1273,37 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Update the match
+        // Update the existing match with the first selected map
         matches[index] = {
             variant: variantId,
-            map: selectedMap,
+            map: selectedMaps[0],
             weight: weight,
             minPlayers: minPlayers,
             maxPlayers: maxPlayers
         };
+        
+        // Create new match entries for any additional maps
+        if (selectedMaps.length > 1) {
+            for (let i = 1; i < selectedMaps.length; i++) {
+                matches.push({
+                    variant: variantId,
+                    map: selectedMaps[i],
+                    weight: weight,
+                    minPlayers: minPlayers,
+                    maxPlayers: maxPlayers
+                });
+            }
+        }
         
         updateMatchesList();
         
         saveToLocalStorage();
         
         resetSaveMatchButton();
+        
+        // Reset the playlist preview if it was previously generated
+        resetPlaylistPreview();
+        
         closeModal('match-modal');
     }
     
@@ -1265,6 +1324,7 @@ document.addEventListener('DOMContentLoaded', function() {
             matches.splice(index, 1);
             updateMatchesList();
             saveToLocalStorage();
+            resetPlaylistPreview();
         }
     }
 
@@ -1453,10 +1513,8 @@ document.addEventListener('DOMContentLoaded', function() {
             playlist += `variant=${variantName}\n`;
             playlist += `map=${mapName}\n`;
             
-            // Comment out undefined weights
-            if (match.weight === undefined) {
-                playlist += `;weight=undefined\n`;
-            } else {
+            // Only include weight if it's defined
+            if (match.weight !== undefined) {
                 playlist += `weight=${match.weight}\n`;
             }
             
@@ -1472,6 +1530,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewContainer = document.getElementById('preview-container');
         if (previewContainer) {
             previewContainer.style.display = 'block';
+        }
+        
+        // Hide the generate playlist button after generation
+        const generateButton = document.getElementById('generate-playlist');
+        if (generateButton) {
+            generateButton.style.display = 'none';
+        }
+        
+        hasGeneratedPlaylist = true;
+    }
+
+    // Function to reset the playlist preview when changes are made
+    function resetPlaylistPreview() {
+        hasGeneratedPlaylist = false;
+        
+        // Show the generate button
+        const generateButton = document.getElementById('generate-playlist');
+        if (generateButton) {
+            generateButton.style.display = 'block';
+        }
+        
+        // Hide the preview container
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
         }
     }
 

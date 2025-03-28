@@ -1015,4 +1015,86 @@ select[multiple] option:checked {
 .variant-item {
     display: flex;
     align-items: center;
+}
+
+.advanced-options-container {
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.advanced-options-toggle {
+    width: 100%;
+    background-color: var(--tertiary-bg);
+    color: var(--text-color);
+    padding: 12px 15px;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.advanced-options-toggle:hover {
+    background-color: var(--border-color);
+}
+
+.toggle-icon {
+    margin-right: 8px;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 18px;
+    font-size: 16px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.advanced-options-content {
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.checkbox-with-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-with-label input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkbox-with-label label {
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.weight-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.weight-input-container {
+    margin-left: 24px;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .weight-input-container {
+        margin-left: 0;
+    }
+}
+
+body.modal-open {
+    overflow: hidden;
 } 
