@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const teamOptions = document.querySelectorAll('#teamOptions .form-group');
         
         teamOptions.forEach(option => {
-            if (option.querySelector('label').getAttribute('for') !== 'teamPlay') {
+            if (option.querySelector('label').getAttribute('for') !== 'option-teamPlay') {
                 option.style.display = teamPlayValue === 'On' ? 'block' : 'none';
             }
         });
@@ -420,6 +420,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.getElementById('matchMinPlayers').value = '1';
                 document.getElementById('matchMaxPlayers').value = '16';
+                
+                // Ensure advanced options are hidden by default when adding a new match
+                const advancedOptionsContent = document.getElementById('advanced-options-content');
+                const advancedOptionsToggle = document.getElementById('advanced-options-toggle');
+                
+                if (advancedOptionsContent) {
+                    advancedOptionsContent.style.display = 'none';
+                }
+                
+                if (advancedOptionsToggle) {
+                    const toggleIcon = advancedOptionsToggle.querySelector('.toggle-icon');
+                    if (toggleIcon) {
+                        toggleIcon.textContent = '+';
+                    }
+                }
             }
         }
     }
@@ -746,6 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
         closeAllTooltips();
         
         const variantName = document.getElementById('variantName').value.trim();
+        console.log('DEBUGGING saveVariant - variantName:', variantName);
         
         if (!variantName) {
             showValidationError(document.getElementById('variantName'), 'Please enter a variant name');
@@ -762,16 +778,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get the selected game type
         const gameTypeSelect = document.getElementById('gameType');
         const gameType = gameTypeSelect.value;
+        console.log('DEBUGGING saveVariant - gameType:', gameType);
         
         // Create an object to store all variant settings
         const settings = {};
         
         // Collect values from all option inputs
+        console.log('DEBUGGING saveVariant - Collecting settings from categories:');
         [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS].forEach(optionCategory => {
+            console.log('DEBUGGING - Processing option category:', optionCategory[0]?.id);
             optionCategory.forEach(option => {
-                const element = document.getElementById(`option-${keyToSettingId(option.id)}`);
+                const elementId = `option-${keyToSettingId(option.id)}`;
+                const element = document.getElementById(elementId);
+                console.log(`DEBUGGING - Looking for element ID: ${elementId}, Found:`, element ? 'Yes' : 'No');
                 if (element) {
                     settings[option.id] = element.value;
+                    console.log(`DEBUGGING - Added setting ${option.id} = ${element.value}`);
                 }
             });
         });
@@ -796,10 +818,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Collect values from game-specific options
+        console.log('DEBUGGING saveVariant - Collecting settings from game-specific options:', gameType);
         gameSpecificOptions.forEach(option => {
-            const element = document.getElementById(`option-${keyToSettingId(option.id)}`);
+            const elementId = `option-${keyToSettingId(option.id)}`;
+            const element = document.getElementById(elementId);
+            console.log(`DEBUGGING - Looking for game-specific element ID: ${elementId}, Found:`, element ? 'Yes' : 'No');
             if (element) {
                 settings[option.id] = element.value;
+                console.log(`DEBUGGING - Added game-specific setting ${option.id} = ${element.value}`);
             }
         });
         
@@ -810,6 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
             gameType: gameType,
             settings: settings
         };
+        console.log('DEBUGGING saveVariant - Final variant object:', JSON.stringify(variantObject, null, 2));
         
         // Add or update the variant
         if (currentEditIndex !== -1) {
@@ -1120,7 +1147,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (variant.settings) {
             setTimeout(() => {
                 for (const [key, value] of Object.entries(variant.settings)) {
-                    const select = document.getElementById(key);
+                    const elementId = `option-${keyToSettingId(key)}`;
+                    const select = document.getElementById(elementId);
                     if (select) {
                         select.value = value;
                         
@@ -1365,6 +1393,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generatePlaylist() {
+        // Debug: Print entire variants structure
+        console.log('DEBUGGING: All customVariants:', JSON.stringify(customVariants, null, 2));
+        
         if (matches.length === 0 || customVariants.length === 0) {
             const generateButton = document.getElementById('generate-playlist');
             let errorMessage = 'Please create at least one custom variant and add at least one match before generating a playlist.';
@@ -1419,76 +1450,84 @@ document.addEventListener('DOMContentLoaded', function() {
         playlist += `Postgame Delay=${postgameDelay}\n\n`;
         
         customVariants.forEach(variant => {
+            console.log('Processing variant:', variant);
+            console.log('Settings object:', variant.settings);
+            console.log('Settings keys:', variant.settings ? Object.keys(variant.settings) : 'No settings');
+            
             playlist += '[custom variant]\n';
             playlist += `name=${variant.name}\n`;
             
             const gameType = GAME_TYPES.find(g => g.id === variant.gameType);
             playlist += `game type=${gameType ? gameType.name : variant.gameType}\n`;
             
-            for (const [key, value] of Object.entries(variant.settings)) {
-                let displayName = null;
+            // Add all settings from the variant
+            if (variant.settings) {
+                for (const [key, value] of Object.entries(variant.settings)) {
+                    console.log(`Processing setting: ${key} = ${value}`);
+                    let displayName = null;
 
-                if (key === 'scoreToWinRound' || key === 'scoreToWin') {
-                    displayName = 'Score to Win Round';
-                } else {
-                    [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
-                     SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
-                     ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
-                        if (!optionCategory) return;
-                        
-                        const option = optionCategory.find(opt => opt.id === key);
-                        if (option && option.name) {
-                            displayName = option.name;
-                        }
-                    });
-                }
-
-                const formattedKey = displayName || formatSettingKey(key);
-                
-                let formattedValue = value;
-                
-                [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS].forEach(optionCategory => {
-                    optionCategory.forEach(option => {
-                        if (option.id === key) {
-                            const foundValue = option.values.find(v => v.id === value);
-                            if (foundValue) {
-                                formattedValue = foundValue.name;
+                    if (key === 'scoreToWinRound' || key === 'scoreToWin') {
+                        displayName = 'Score to Win Round';
+                    } else {
+                        [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS,
+                         SLAYER_OPTIONS, KOTH_OPTIONS, ODDBALL_OPTIONS, JUGGERNAUT_OPTIONS, CTF_OPTIONS, 
+                         ASSAULT_OPTIONS, TERRITORIES_OPTIONS].forEach(optionCategory => {
+                            if (!optionCategory) return;
+                            
+                            const option = optionCategory.find(opt => opt.id === key);
+                            if (option && option.name) {
+                                displayName = option.name;
                             }
-                        }
-                    });
-                });
-                
-                // Special case handling for weapon respawn time
-                if (key === 'weaponRespawnTime' && value === 'HalfTime') {
-                    formattedValue = 'Half Time';
-                } else if (key === 'weaponRespawnTime' && value === 'DoubleTime') {
-                    formattedValue = 'Twice as Often';
-                }
-
-                const timeValueMatch = formattedValue.match(/^(\d+)(Minute|Second|Minutes|Seconds)$/);
-                if (timeValueMatch) {
-                    const number = timeValueMatch[1];
-                    const unit = timeValueMatch[2].toLowerCase();
-
-                    if (unit === 'minute' || unit === 'minutes') {
-                        formattedValue = `${number} ${number === '1' ? 'Minute' : 'Minutes'}`;
-                    } else if (unit === 'second' || unit === 'seconds') {
-                        formattedValue = `${number} ${number === '1' ? 'Second' : 'Seconds'}`;
+                        });
                     }
-                }
-                
-                if (typeof formattedValue === 'string') {
-                    const timeTerms = ['minute', 'minutes', 'second', 'seconds', 'half time', 'twice as often'];
-                    timeTerms.forEach(term => {
-                        if (formattedValue.toLowerCase().includes(term)) {
-                            formattedValue = formattedValue.split(' ').map(word => {
-                                return word.charAt(0).toUpperCase() + word.slice(1);
-                            }).join(' ');
-                        }
+
+                    const formattedKey = displayName || formatSettingKey(key);
+                    
+                    let formattedValue = value;
+                    
+                    [MATCH_OPTIONS, PLAYER_SETTINGS, TEAM_OPTIONS, VEHICLE_OPTIONS, EQUIPMENT_OPTIONS].forEach(optionCategory => {
+                        optionCategory.forEach(option => {
+                            if (option.id === key) {
+                                const foundValue = option.values.find(v => v.id === value);
+                                if (foundValue) {
+                                    formattedValue = foundValue.name;
+                                }
+                            }
+                        });
                     });
+                    
+                    // Special case handling for weapon respawn time
+                    if (key === 'weaponRespawnTime' && value === 'HalfTime') {
+                        formattedValue = 'Half Time';
+                    } else if (key === 'weaponRespawnTime' && value === 'DoubleTime') {
+                        formattedValue = 'Twice as Often';
+                    }
+
+                    const timeValueMatch = formattedValue.match(/^(\d+)(Minute|Second|Minutes|Seconds)$/);
+                    if (timeValueMatch) {
+                        const number = timeValueMatch[1];
+                        const unit = timeValueMatch[2].toLowerCase();
+
+                        if (unit === 'minute' || unit === 'minutes') {
+                            formattedValue = `${number} ${number === '1' ? 'Minute' : 'Minutes'}`;
+                        } else if (unit === 'second' || unit === 'seconds') {
+                            formattedValue = `${number} ${number === '1' ? 'Second' : 'Seconds'}`;
+                        }
+                    }
+                    
+                    if (typeof formattedValue === 'string') {
+                        const timeTerms = ['minute', 'minutes', 'second', 'seconds', 'half time', 'twice as often'];
+                        timeTerms.forEach(term => {
+                            if (formattedValue.toLowerCase().includes(term)) {
+                                formattedValue = formattedValue.split(' ').map(word => {
+                                    return word.charAt(0).toUpperCase() + word.slice(1);
+                                }).join(' ');
+                            }
+                        });
+                    }
+                    
+                    playlist += `${formattedKey} = ${formattedValue}\n`;
                 }
-                
-                playlist += `${formattedKey} = ${formattedValue}\n`;
             }
             
             playlist += '\n';
@@ -1507,14 +1546,16 @@ document.addEventListener('DOMContentLoaded', function() {
             let mapName = match.map;
             const mapObj = MAPS.find(m => m.id === match.map);
             if (mapObj) {
+                // Use file_name if available, otherwise use display name for the HPL file
                 mapName = mapObj.file_name || mapObj.name;
             }
             
             playlist += `variant=${variantName}\n`;
             playlist += `map=${mapName}\n`;
-            
-            // Only include weight if it's defined
-            if (match.weight !== undefined) {
+
+            if (match.weight === undefined) {
+                playlist += `; weight= undefined\n`;
+            } else {
                 playlist += `weight=${match.weight}\n`;
             }
             
@@ -1531,8 +1572,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (previewContainer) {
             previewContainer.style.display = 'block';
         }
-        
-        // Hide the generate playlist button after generation
+
         const generateButton = document.getElementById('generate-playlist');
         if (generateButton) {
             generateButton.style.display = 'none';
@@ -1769,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const select = document.createElement('select');
-        select.id = option.id;
+        select.id = `option-${keyToSettingId(option.id)}`;
         select.name = option.id;
         
         option.values.forEach(value => {
