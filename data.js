@@ -24,12 +24,12 @@ const MAPS = [
     { id: "Gemini", name: "Gemini", size: "Medium" },
     { id: "Relic", name: "Relic", size: "Large" },
     { id: "Terminal", name: "Terminal", size: "Large" },
-    { id: "Desolation", name: "Desolation", size: "Medium", file_name: "Derelict" },
-    { id: "Tombstone", name: "Tombstone", size: "Medium", file_name: "Highplains" },
+    { id: "Desolation", name: "Desolation", size: "Medium", },
+    { id: "Tombstone", name: "Tombstone", size: "Medium", },
     { id: "District", name: "District", size: "Large" },
     { id: "Uplift", name: "Uplift", size: "Large" }
 ];
-
+ 
 // Game Types
 const GAME_TYPES = [
     { id: "Slayer", name: "Slayer", description: "Kill as many of your opponents as you can. The player with the most points wins." },
@@ -83,7 +83,7 @@ const BASE_VARIANTS = [
 const MATCH_OPTIONS = [
     {
         id: "numberOfRounds",
-        name: "Number of Rounds",
+        name: "Number Of Rounds",
         description: "A game can end after a single round, after a fixed number of rounds, or only after someone wins a number of rounds.",
         values: [
             { id: "1Round", name: "1 Round" },
@@ -210,7 +210,7 @@ const PLAYER_SETTINGS = [
     },
     {
         id: "activeCamo",
-        name: "Player Active Camo",
+        name: "Active Camo",
         description: "When this is on, all players will be invisible with Active Camo. Firing a weapon or taking damage makes you temporarily visible again.",
         values: [
             { id: "Off", name: "Off" },
@@ -319,7 +319,7 @@ const VEHICLE_OPTIONS = [
         description: "Vehicle respawn time determines how quickly dead vehicles come back to life. Times are relative to the default settings for the map.",
         values: [
             { id: "MapDefault", name: "Map Default" },
-            { id: "HalfTime", name: "Half Time" },
+            { id: "HalfAsOften", name: "Half As Often" },
             { id: "NoRespawn", name: "No Respawn" }
         ]
     },
@@ -462,7 +462,7 @@ const EQUIPMENT_OPTIONS = [
     },
     {
         id: "weaponsOnMap",
-        name: "Weapons on Map",
+        name: "Weapons On Map",
         description: "This setting determines the set of weapons that is available on the map. Weapons on map can also be turned off entirely.",
         values: [
             { id: "MapDefault", name: "Map Default" },
@@ -508,7 +508,7 @@ const EQUIPMENT_OPTIONS = [
     },
     {
         id: "overshields",
-        name: "Overshields On Map",
+        name: "Overshields",
         description: "This setting controls whether or not the Overshield powerup is available on the map.",
         values: [
             { id: "On", name: "On" },
@@ -731,9 +731,9 @@ const ODDBALL_OPTIONS = [
         name: "Ball Indicator",
         description: "This setting controls if and when you see an indicator revealing the location of the ball. (default = always on)",
         values: [
-            { id: "AlwaysOn", name: "Always On", default: true },
-            { id: "DroppedBall", name: "Dropped Ball", default: false },
-            { id: "TeamControl", name: "Team Control", default: false },
+            { id: "Always On", name: "Always On", default: true },
+            { id: "Dropped Ball", name: "Dropped Ball", default: false },
+            { id: "Team Control", name: "Team Control", default: false },
             { id: "Off", name: "Off", default: false }
         ]
     }
@@ -853,9 +853,9 @@ const CTF_OPTIONS = [
         name: "Flag Type",
         description: "In Single Flag there is only one defending team. In Flag Per Team (multi-flag), each team has a flag and must play offense and defense at the same time. In Neutral Flag there is a single flag that any team can capture. (Flag per team = default.)",
         values: [
-            { id: "SingleFlag", name: "Single Flag", default: false },
-            { id: "FlagPerTeam", name: "Flag Per Team", default: true },
-            { id: "NeutralFlag", name: "Neutral Flag", default: false }
+            { id: "Single Flag", name: "Single Flag", default: false },
+            { id: "Flag Per Team", name: "Flag Per Team", default: true },
+            { id: "Neutral Flag", name: "Neutral Flag", default: false }
         ]
     },
     {
@@ -948,9 +948,9 @@ const CTF_OPTIONS = [
         name: "Flag Indicator",
         description: "Determines if and when you have an indicator showing the location of your flag. (Neutral by default.)",
         values: [
-            { id: "WhenUncontrolled", name: "When Uncontrolled", default: true },
-            { id: "AlwaysOn", name: "Always On", default: false },
-            { id: "AwayFromHome", name: "Away From Home", default: false },
+            { id: "When Uncontrolled", name: "When Uncontrolled", default: true },
+            { id: "Always On", name: "Always On", default: false },
+            { id: "Away From Home", name: "Away From Home", default: false },
             { id: "Off", name: "Off", default: false }
         ]
     }
@@ -985,9 +985,9 @@ const ASSAULT_OPTIONS = [
         name: "Enemy Bomb Indicator",
         description: "Determines if and when defenders have an indicator showing the location of an enemy bomb. (Default = when dropped)",
         values: [
-            { id: "AlwaysOn", name: "Always On", default: false },
-            { id: "WhenDropped", name: "When Dropped", default: true },
-            { id: "WhenArmed", name: "When Armed", default: false },
+            { id: "Always On", name: "Always On", default: false },
+            { id: "When Dropped", name: "When Dropped", default: true },
+            { id: "When Armed", name: "When Armed", default: false },
             { id: "Off", name: "Off", default: false }
         ]
     },
@@ -1113,14 +1113,14 @@ const TERRITORIES_OPTIONS = [
         name: "Territory Count",
         description: "This setting determines the maximum number of territories on the map. Notes: Not all maps have this many territories. (Default = 3)",
         values: [
-            { id: "1Territory", name: "1 Territory", default: false },
-            { id: "2Territories", name: "2 Territories", default: false },
-            { id: "3Territories", name: "3 Territories", default: true },
-            { id: "4Territories", name: "4 Territories", default: false },
-            { id: "5Territories", name: "5 Territories", default: false },
-            { id: "6Territories", name: "6 Territories", default: false },
-            { id: "7Territories", name: "7 Territories", default: false },
-            { id: "8Territroies", name: "8 Territories", default: false }
+            { id: "1 Territory", name: "1 Territory", default: false },
+            { id: "2 Territories", name: "2 Territories", default: false },
+            { id: "3 Territories", name: "3 Territories", default: true },
+            { id: "4 Territories", name: "4 Territories", default: false },
+            { id: "5 Territories", name: "5 Territories", default: false },
+            { id: "6 Territories", name: "6 Territories", default: false },
+            { id: "7 Territories", name: "7 Territories", default: false },
+            { id: "8 Territroies", name: "8 Territories", default: false }
         ]
     },
     {

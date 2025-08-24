@@ -2,6 +2,8 @@
 
 A web-based tool for creating custom playlists (.hpl files) for Halo 2 PC Project Cartographer. This application allows users to create custom game variants, define matches, and generate playlist files that can be used with the Halo 2 Dedicated Server.
 
+![Halo 2 Playlist Creator](screenshot.png)
+
 ## Features
 
 - Create and manage custom game variants with full control over all game settings
